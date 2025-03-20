@@ -149,11 +149,51 @@ class AuthHandler {
             const api = getApiService();
             const response = await api.login(email, password);
             
-            // Rest of your login logic
-            // ...
+            if (response.access_token) {
+                // Login successful
+                this.isLoggedIn = true;
+                this.currentUser = response.user;
+                
+                // Close the modal
+                if (this.loginModalInstance) {
+                    this.loginModalInstance.hide();
+                }
+                
+                // Show success message
+                this.showToast('Login successful!', 'success');
+                
+                // Update UI
+                this.updateUI();
+                
+                // Redirect to index page after a short delay
+                setTimeout(() => {
+                    // Check current page
+                    const currentPath = window.location.pathname;
+                    if (currentPath.includes('landing.html')) {
+                        window.location.href = 'index.html';
+                    } else {
+                        // If already on a different page, just refresh
+                        window.location.reload();
+                    }
+                }, 1000);
+            }
         } catch (error) {
             console.error("Login error:", error);
-            // Handle login error
+            
+            // Show error message
+            const errorMessage = error.message || 'Invalid credentials. Please try again.';
+            this.showToast(errorMessage, 'error');
+            
+            // Create alert for error message
+            const alertEl = this.createAlert('danger');
+            alertEl.innerText = errorMessage;
+            
+            // Add alert to login form
+            const alertContainer = document.querySelector('#login-form .alert-container');
+            if (alertContainer) {
+                alertContainer.innerHTML = '';
+                alertContainer.appendChild(alertEl);
+            }
         }
     }
 
@@ -319,38 +359,43 @@ class AuthHandler {
     
     showToast(message, type = 'info') {
         // Create toast container if it doesn't exist
-        let toastContainer = document.querySelector('.toast-container');
+        let toastContainer = document.getElementById('toast-container');
         if (!toastContainer) {
             toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container';
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
             document.body.appendChild(toastContainer);
         }
         
         // Create toast element
-        const toastEl = document.createElement('div');
-        toastEl.className = `toast align-items-center text-white bg-${type} border-0 mb-2`;
-        toastEl.setAttribute('role', 'alert');
-        toastEl.setAttribute('aria-live', 'assertive');
-        toastEl.setAttribute('aria-atomic', 'true');
+        const toastId = 'toast-' + Date.now();
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type}`;
+        toast.id = toastId;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
         
-        toastEl.innerHTML = `
+        // Create toast content
+        toast.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body">
                     ${message}
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         `;
         
-        toastContainer.appendChild(toastEl);
+        // Add toast to container
+        toastContainer.appendChild(toast);
         
         // Initialize and show toast
-        const toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
-        toast.show();
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
         
-        // Remove from DOM after hiding
-        toastEl.addEventListener('hidden.bs.toast', () => {
-            toastEl.remove();
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
         });
     }
 }

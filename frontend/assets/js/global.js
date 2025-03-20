@@ -52,3 +52,35 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
+
+// This script ensures global services are properly initialized
+
+// Make sure apiService is globally available
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize toast container if needed
+    if (!document.getElementById('toast-container')) {
+        const toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Check authentication state from localStorage
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+        // Check if we're on landing page but already logged in
+        if (window.location.pathname.includes('landing.html')) {
+            // Redirect to index
+            window.location.href = 'index.html';
+        }
+    } else {
+        // Not logged in, handle auth-required pages
+        const isAuthRequired = document.body.classList.contains('auth-required');
+        if (isAuthRequired && !window.location.pathname.includes('landing.html')) {
+            // Redirect to landing
+            window.location.href = '../landing.html?redirect=' + encodeURIComponent(window.location.pathname);
+        }
+    }
+});
