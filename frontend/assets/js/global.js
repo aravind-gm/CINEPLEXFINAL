@@ -26,3 +26,29 @@ class GlobalSearch {
 document.addEventListener('DOMContentLoaded', () => {
     new GlobalSearch();
 });
+
+// This script ensures apiService is globally available
+window.addEventListener('DOMContentLoaded', () => {
+    // Check if apiService already exists
+    if (!window.apiService && typeof apiService !== 'undefined') {
+        window.apiService = apiService;
+    }
+    
+    // If it still doesn't exist, create it
+    if (!window.apiService) {
+        console.warn("Creating global apiService instance");
+        // Simplified temporary version if api.js hasn't loaded yet
+        window.apiService = {
+            baseUrl: 'https://cineplexfinal.onrender.com',
+            // Add minimal required methods
+            login: async (email, password) => {
+                // Redirect to full implementation once loaded
+                if (typeof apiService !== 'undefined') {
+                    return apiService.login(email, password);
+                }
+                // Otherwise basic implementation
+                // ...
+            }
+        };
+    }
+});

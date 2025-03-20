@@ -3,6 +3,19 @@
  * Manages user authentication state and UI updates
  */
 
+// Function to ensure apiService is available
+function getApiService() {
+    // First try window.apiService (global)
+    if (window.apiService) return window.apiService;
+    
+    // If that fails, check if it's directly accessible 
+    if (typeof apiService !== 'undefined') return apiService;
+    
+    // Last resort - create a new instance
+    console.warn("API Service not found, creating temporary instance");
+    return new ApiService();
+}
+
 class AuthHandler {
     constructor() {
         this.loginForm = document.getElementById('login-form');
@@ -133,7 +146,8 @@ class AuthHandler {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             
-            const response = await apiService.login(email, password);
+            const api = getApiService();
+            const response = await api.login(email, password);
             
             // Rest of your login logic
             // ...
