@@ -7,7 +7,7 @@ const API_BASE_URL = 'https://cineplexfinal.onrender.com';
 
 class ApiService {
     constructor() {
-        this.baseUrl = 'http://localhost:8000';
+        this.baseUrl = currentConfig.apiBaseUrl;
         this.imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
     }
 
@@ -389,7 +389,30 @@ class ApiService {
             throw error;
         }
     }
+
+    async fetch(endpoint, options = {}) {
+        const url = `${this.baseUrl}${endpoint}`;
+        
+        // Include credentials for cross-origin requests with cookies
+        const defaultOptions = {
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        const mergedOptions = { ...defaultOptions, ...options };
+        
+        if (this.token) {
+            mergedOptions.headers['Authorization'] = `Bearer ${this.token}`;
+        }
+        
+        const response = await fetch(url, mergedOptions);
+        
+        // Handle response
+        // ...
+    }
 }
 
-// Create a singleton instance
+// Create and export an instance of the ApiService
 const apiService = new ApiService();
