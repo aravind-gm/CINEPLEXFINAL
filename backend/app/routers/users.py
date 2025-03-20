@@ -14,6 +14,9 @@ from datetime import datetime
 import logging
 import app.schemas.schemas as schemas
 
+# Update the BASE_URL to point to your Render service
+BASE_URL = "https://cineplexfinal.onrender.com"  # Change this to your actual Render URL
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/users", tags=["Users"])

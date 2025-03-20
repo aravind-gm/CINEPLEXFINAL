@@ -1,4 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, Field, validator
+import re
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
@@ -116,8 +117,15 @@ class RatingResponse(RatingBase):
 
 # Now we can define User schemas since all dependent schemas are defined
 class UserBase(BaseModel):
-    email: EmailStr = Field(..., description="User's email address")
+    email: str  # Changed from EmailStr to str
     username: str = Field(..., min_length=3, max_length=50, description="Username")
+
+    @validator('email')
+    def validate_email(cls, v):
+        email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(email_pattern, v):
+            raise ValueError('Invalid email format')
+        return v
 
 class UserCreate(BaseModel):
     full_name: str

@@ -7,6 +7,7 @@ from app.routers import auth, movies, recommendations, users
 from app.config import settings
 import logging
 from pydantic import ValidationError
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -37,6 +38,7 @@ app.include_router(users.router)
 @app.on_event("startup")
 async def startup_event():
     create_tables()
+    os.makedirs("uploads/avatars", exist_ok=True)
 
 # Root endpoint
 @app.get("/")
