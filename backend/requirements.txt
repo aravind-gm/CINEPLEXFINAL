@@ -1,0 +1,14 @@
+fastapi==0.115.11
+httpx==0.28.1
+python-jose==3.4.0
+numpy==2.2.4
+pandas==2.2.3
+pydantic==2.10.6
+pydantic_settings==2.8.1
+python-dotenv==1.0.1
+python-multipart
+bcrypt
+requests==2.32.3
+scikit-learn==1.6.1
+sqlalchemy==2.0.39
+uvicorn==0.30.1
