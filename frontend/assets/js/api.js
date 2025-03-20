@@ -3,6 +3,8 @@
  * Handles all API calls to the backend
  */
 
+const API_BASE_URL = 'https://cineplexfinal.onrender.com';
+
 class ApiService {
     constructor() {
         this.baseUrl = 'http://localhost:8000';
