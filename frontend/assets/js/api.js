@@ -3,12 +3,12 @@
  * Handles all API calls to the backend
  */
 
-// Define API base URL (already set to your Render URL)
+// Define API base URL (update this to your actual backend URL)
 const API_BASE_URL = 'https://cineplexfinal.onrender.com';
 
 class ApiService {
     constructor() {
-        // Use the direct API_BASE_URL constant instead of currentConfig
+        // Set the base URL directly
         this.baseUrl = API_BASE_URL;
         this.imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
     }
@@ -18,7 +18,7 @@ class ApiService {
         return token ? { 'Authorization': `Bearer ${token}` } : {};
     }
 
-    // In your apiCall method, add better error handling for CORS issues
+    // In your apiCall method, update the URL construction
     async apiCall(endpoint, options = {}) {
         // Make sure endpoint starts with a slash
         const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
@@ -38,8 +38,7 @@ class ApiService {
         // Merge options
         const fetchOptions = { ...defaultOptions, ...options };
         
-        // Log the request for debugging
-        console.log('API request:', fetchOptions.method, endpoint, fetchOptions);
+        console.log('Making API request to:', url);
         
         try {
             const response = await fetch(url, fetchOptions);
