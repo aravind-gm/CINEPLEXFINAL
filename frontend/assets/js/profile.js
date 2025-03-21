@@ -144,75 +144,54 @@ class ProfilePage {
     
     async loadUserProfile() {
         try {
+            const spinner = this.showLoadingSpinner();
+            
+            // Get current user data
             this.userData = await apiService.getCurrentUser();
+            console.log('User profile loaded:', this.userData);
             
-            // Update profile information
-            this.updateProfileDisplay();
+            if (this.userData) {
+                // Update UI with user data
+                this.updateProfileDisplay();
+                
+                // Load other user-specific data
+                await Promise.all([
+                    this.loadWatchHistory(),
+                    this.loadWatchlist()
+                ]);
+            }
             
-            // Load watch history and watchlist
-            this.loadWatchHistory();
-            this.loadWatchlist();
-            
+            this.hideLoadingSpinner(spinner);
         } catch (error) {
             console.error('Error loading user profile:', error);
-            // Show an error message or handle as appropriate
+            this.showToast('Error loading profile: ' + error.message, 'danger');
         }
     }
     
     updateProfileDisplay() {
-        if (!this.userData) return;
-        
-        // Update profile picture
-        const profileAvatar = document.querySelector('.user-avatar');
-        if (profileAvatar) {
-            let avatarUrl;
-            
-            if (this.userData.avatar_url) {
-                // Always use the avatarsPath for local files
-                avatarUrl = `${this.avatarsPath}/${this.userData.avatar_url}`;
-                console.log('Setting avatar URL:', avatarUrl);
-            } else {
-                avatarUrl = `${this.avatarsPath}/default.png`;
-                console.log('Using default avatar:', avatarUrl);
-            }
-
-            profileAvatar.src = avatarUrl;
-            profileAvatar.onerror = () => {
-                console.error('Failed to load avatar:', avatarUrl);
-                profileAvatar.src = `${this.avatarsPath}/default.png`;
-            };
-
-            // Also update preview if it exists
-            if (this.avatarPreview) {
-                this.avatarPreview.src = avatarUrl;
-                this.avatarPreview.onerror = () => {
-                    this.avatarPreview.src = `${this.avatarsPath}/default.png`;
+        // Update profile avatar
+        if (this.userData.avatar_url) {
+            const avatarElements = document.querySelectorAll('.user-avatar');
+            avatarElements.forEach(el => {
+                el.src = this.userData.avatar_url.startsWith('http') 
+                    ? this.userData.avatar_url 
+                    : `${this.avatarsPath}/${this.userData.avatar_url}`;
+                el.onerror = () => {
+                    el.src = '../assets/images/avatars/default.png';
                 };
-            }
+            });
         }
-
-        // Update other profile information
+        
+        // Update user info
         if (this.profileUsername) {
             this.profileUsername.textContent = this.userData.username;
         }
+        
         if (this.profileEmail) {
             this.profileEmail.textContent = this.userData.email;
         }
-        // Update user statistics
-        if (this.moviesRatedCount) {
-            this.moviesRatedCount.textContent = this.userData.rated_movies?.length || 0;
-        }
         
-        if (this.moviesWatchedCount) {
-            this.moviesWatchedCount.textContent = this.userData.watch_history?.length || 0;
-        }
-        
-        if (this.favoriteGenres) {
-            const genres = this.userData.preferences?.map(genre => genre.name).slice(0, 3).join(', ') || '-';
-            this.favoriteGenres.textContent = genres;
-        }
-        
-        // Update demographic information if available
+        // Update demographic information
         if (this.userData.full_name && this.profileFullName) {
             this.profileFullName.textContent = this.userData.full_name;
         }
@@ -237,9 +216,15 @@ class ProfilePage {
             this.profileFavoriteCountries.textContent = this.userData.favorite_countries;
         }
         
-        // Populate edit profile form
-        document.getElementById('edit-username').value = this.userData.username;
-        document.getElementById('edit-email').value = this.userData.email;
+        // Update the edit form fields too
+        document.getElementById('edit-username').value = this.userData.username || '';
+        document.getElementById('edit-email').value = this.userData.email || '';
+        document.getElementById('edit-fullname').value = this.userData.full_name || '';
+        document.getElementById('edit-age').value = this.userData.age || '';
+        document.getElementById('edit-gender').value = this.userData.gender || 'prefer not to say';
+        document.getElementById('edit-location').value = this.userData.location || '';
+        document.getElementById('edit-marital-status').value = this.userData.marital_status || 'prefer not to say';
+        document.getElementById('edit-favorite-countries').value = this.userData.favorite_countries || '';
     }
     
     async loadWatchHistory() {
@@ -415,39 +400,50 @@ class ProfilePage {
     }
     
     showToast(message, type = 'info') {
+        // Check if authHandler exists first
+        if (window.authHandler && typeof window.authHandler.showToast === 'function') {
+            window.authHandler.showToast(message, type);
+            return;
+        }
+        
         // Create toast container if it doesn't exist
-        let toastContainer = document.querySelector('.toast-container');
+        let toastContainer = document.getElementById('toast-container');
         if (!toastContainer) {
             toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container';
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
             document.body.appendChild(toastContainer);
         }
         
         // Create toast element
-        const toastEl = document.createElement('div');
-        toastEl.className = `toast align-items-center text-white bg-${type} border-0 mb-2`;
-        toastEl.setAttribute('role', 'alert');
-        toastEl.setAttribute('aria-live', 'assertive');
-        toastEl.setAttribute('aria-atomic', 'true');
+        const toastId = 'toast-' + Date.now();
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'danger' ? 'danger' : type}`;
+        toast.id = toastId;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
         
-        toastEl.innerHTML = `
+        // Create toast content
+        toast.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body">
                     ${message}
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         `;
         
-        toastContainer.appendChild(toastEl);
+        // Add toast to container
+        toastContainer.appendChild(toast);
         
         // Initialize and show toast
-        const toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
-        toast.show();
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
         
-        // Remove from DOM after hiding
-        toastEl.addEventListener('hidden.bs.toast', () => {
-            toastEl.remove();
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
         });
     }
 
