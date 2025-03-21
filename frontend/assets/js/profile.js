@@ -213,7 +213,7 @@ class ProfilePage {
             this.profileEmail.textContent = this.userData.email || 'user@example.com';
         }
         
-        // Update demographic information - handle multiple field name formats
+        // Update demographic information
         if (this.profileFullName) {
             this.profileFullName.textContent = this.userData.full_name || 'Not provided';
         }
@@ -240,29 +240,9 @@ class ProfilePage {
             this.profileFavoriteCountries.textContent = this.userData.favorite_countries || 'Not provided';
         }
         
-        // Set up edit form fields
-        try {
-            if (document.getElementById('edit-fullname')) {
-                document.getElementById('edit-fullname').value = this.userData.full_name || '';
-            }
-            if (document.getElementById('edit-age')) {
-                document.getElementById('edit-age').value = this.userData.age || '';
-            }
-            if (document.getElementById('edit-gender')) {
-                document.getElementById('edit-gender').value = this.userData.gender || 'prefer not to say';
-            }
-            if (document.getElementById('edit-location')) {
-                document.getElementById('edit-location').value = this.userData.location || '';
-            }
-            if (document.getElementById('edit-marital-status')) {
-                document.getElementById('edit-marital-status').value = this.userData.marital_status || 'prefer not to say';
-            }
-            if (document.getElementById('edit-favorite-countries')) {
-                document.getElementById('edit-favorite-countries').value = this.userData.favorite_countries || '';
-            }
-        } catch (error) {
-            console.error('Error setting up edit form:', error);
-        }
+        // Load user content sections
+        this.loadWatchHistory();
+        this.loadWatchlist();
     }
     
     async loadWatchHistory() {

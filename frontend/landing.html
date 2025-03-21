@@ -208,6 +208,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get all demographic data
+            const fullName = document.getElementById('register-fullname').value;
+            const age = document.getElementById('register-age').value;
+            const email = document.getElementById('register-email').value;
+            const gender = document.getElementById('register-gender').value;
+            const password = document.getElementById('register-password').value;
+            const location = document.getElementById('register-location').value;
+            const maritalStatus = document.getElementById('register-marital-status').value;
+            const favoriteCountries = document.getElementById('register-countries').value;
+            const username = document.getElementById('register-username').value;
+            
+            // Create userData object with all demographics
+            const userData = {
+                username: username,
+                email: email,
+                password: password,
+                full_name: fullName,
+                age: parseInt(age),
+                gender: gender,
+                location: location,
+                marital_status: maritalStatus,
+                favorite_countries: favoriteCountries
+            };
+            
+            // Send complete data to register endpoint
+            const response = await apiService.register(userData);
+        });
+    }
 });
 </script>
 </body>
