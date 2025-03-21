@@ -20,7 +20,9 @@ class ApiService {
 
     // In your apiCall method, add better error handling for CORS issues
     async apiCall(endpoint, options = {}) {
-        const url = this.API_BASE_URL + endpoint;
+        // Make sure endpoint starts with a slash
+        const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+        const url = this.baseUrl + formattedEndpoint;
         
         // Default options
         const defaultOptions = {
