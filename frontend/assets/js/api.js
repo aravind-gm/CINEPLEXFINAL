@@ -18,7 +18,7 @@ class ApiService {
     }
 
     async apiCall(endpoint, options = {}) {
-        const API_BASE_URL = 'http://localhost:8000/api';  // Update to match your backend URL
+        const API_BASE_URL = 'https://cineplexfinal.onrender.com';  // Update to match your backend URL
         
         // Create an abort controller for timeout
         const controller = new AbortController();
