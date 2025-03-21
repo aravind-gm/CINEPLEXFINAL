@@ -18,61 +18,53 @@ class ApiService {
     }
 
     async apiCall(endpoint, options = {}) {
-        // Check if in guest mode
-        const isGuestMode = localStorage.getItem('isGuestMode') === 'true';
+        const API_BASE_URL = 'http://localhost:8000/api';  // Update to match your backend URL
         
-        // For certain endpoints that require authentication, return mock data in guest mode
-        if (isGuestMode) {
-            // List of endpoints that should return mock data in guest mode
-            if (endpoint === '/auth/me') {
-                return JSON.parse(localStorage.getItem('user'));
-            }
-            
-            // For endpoints that modify data, show a message and return a mock success
-            if (options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE') {
-                console.log('In guest mode: This action would normally modify data on the server');
-                return { success: true, guest_mode: true, message: 'Action simulated in guest mode' };
-            }
-        }
+        // Create an abort controller for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
-        // Continue with normal API call for non-guest mode or for endpoints that should work in guest mode
-        const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-        const url = this.baseUrl + formattedEndpoint;
-        
-        // Default options with correct credentials handling
-        const defaultOptions = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'include'
-        };
-        
-        const fetchOptions = { 
-            ...defaultOptions,
-            ...options,
-            headers: {
-                ...defaultOptions.headers,
-                ...(options.headers || {})
-            }
-        };
-
         try {
-            const response = await fetch(url, fetchOptions);
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...options,
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId); // Clear timeout on successful response
+            
+            // Log response details for debugging
+            console.log(`API call to ${endpoint}: status ${response.status}`);
             
             if (!response.ok) {
-                const errorData = await response.json().catch(() => null);
-                throw new Error(errorData?.detail || `HTTP error! status: ${response.status}`);
+                // Try to get error details from response
+                let errorMessage;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || `API error: ${response.statusText}`;
+                } catch (e) {
+                    errorMessage = `API error: ${response.statusText}`;
+                }
+                
+                // Create error object with status code
+                const error = new Error(errorMessage);
+                error.status = response.status;
+                throw error;
             }
             
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
+            // Check if response is empty
+            const text = await response.text();
+            if (!text) {
+                return null;
             }
-            return await response.text();
+            
+            // Parse JSON response
+            return JSON.parse(text);
         } catch (error) {
-            console.error('API Error:', error);
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timed out. Server may be unavailable.');
+            }
+            console.error(`API call failed: ${endpoint}`, error);
             throw error;
         }
     }
@@ -200,21 +192,25 @@ class ApiService {
 
     async getCurrentUser() {
         const token = localStorage.getItem('token');
-        const isGuestMode = localStorage.getItem('isGuestMode') === 'true';
-        
-        if (!token) return null;
-        
-        if (isGuestMode) {
-            // Return the stored guest user
-            return JSON.parse(localStorage.getItem('user'));
+        if (!token) {
+            console.error('No token available for API call');
+            return null;
         }
         
-        // Normal flow for authenticated users
-        return this.apiCall('/auth/me', {
-            headers: {
-                'Authorization': `Bearer ${token}`
+        try {
+            return await this.apiCall('/auth/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+        } catch (error) {
+            console.error('Error in getCurrentUser:', error);
+            // If unauthorized, clear token
+            if (error.status === 401) {
+                localStorage.removeItem('token');
             }
-        });
+            throw error;
+        }
     }
 
     async searchMovies(query, page = 1) {

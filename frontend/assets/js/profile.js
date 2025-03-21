@@ -147,67 +147,48 @@ class ProfilePage {
     
     async loadUserProfile() {
         try {
-            const spinner = this.showLoadingSpinner();
+            // Show loading state
+            this.showLoadingSpinner();
             
-            // Check if in guest mode
-            if (this.isGuestMode) {
-                // Use the guest user data from localStorage
-                this.userData = JSON.parse(localStorage.getItem('user'));
-                
-                // Add guest-specific properties
-                this.userData.full_name = 'Guest User';
-                this.userData.age = '-';
-                this.userData.gender = 'Not available in guest mode';
-                this.userData.location = 'Not available in guest mode';
-                this.userData.marital_status = 'Not available in guest mode';
-                this.userData.favorite_countries = 'Not available in guest mode';
-                this.userData.watch_history = [];
-                this.userData.watchlist = [];
-                
-                this.updateProfileDisplay();
-                this.hideLoadingSpinner(spinner);
-                
-                // Show guest mode notice
+            // Get user data
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // No token found - show guest mode or redirect
+                this.hideLoadingSpinner(document.querySelector('.spinner-overlay'));
                 this.showGuestModeNotice();
                 return;
             }
-            
-            // Better token validation
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('No authentication token found');
-            }
-            
-            // Log token to debug (remove in production)
-            console.log('Using token:', token.substring(0, 10) + '...');
-            
-            // Get current user data
+
+            // Fetch user data
             this.userData = await apiService.getCurrentUser();
             
             if (!this.userData) {
                 throw new Error('Failed to load user data');
             }
             
-            console.log('Complete user profile loaded:', this.userData);
+            console.log('User data loaded:', this.userData);
+            
+            // Update the UI with user data
             this.updateProfileDisplay();
             
-            this.hideLoadingSpinner(spinner);
-            this.displayDebugInfo(); // Show debug data
+            // Hide spinner after loading
+            this.hideLoadingSpinner(document.querySelector('.spinner-overlay'));
+            
         } catch (error) {
             console.error('Error loading user profile:', error);
             this.hideLoadingSpinner(document.querySelector('.spinner-overlay'));
             
             // Update UI to show error instead of infinite loading
             document.querySelectorAll('.demo-value').forEach(el => {
-                el.textContent = 'Login required';
+                el.innerHTML = '<span class="text-danger">Error loading data</span>';
             });
             
             this.showToast('Error loading profile: ' + error.message, 'danger');
             
             // If token is invalid, redirect to login page after short delay
-            if (error.message.includes('401')) {
-                localStorage.removeItem('token');
+            if (error.message && error.message.includes('401')) {
                 setTimeout(() => {
+                    localStorage.removeItem('token'); // Clear invalid token
                     window.location.href = '../landing.html';
                 }, 2000);
             }
@@ -697,6 +678,67 @@ class ProfilePage {
         
         // Append to main content
         document.querySelector('.container.py-5').appendChild(debugSection);
+    }
+
+    // Add this to your ProfilePage class
+    showDebugInfo() {
+        // Create debug panel
+        const debugPanel = document.createElement('div');
+        debugPanel.className = 'card bg-dark text-white mt-4';
+        debugPanel.innerHTML = `
+            <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Debug Info</h5>
+                <button type="button" class="btn btn-sm btn-outline-danger">Clear Token</button>
+            </div>
+            <div class="card-body">
+                <p><strong>Token:</strong> ${localStorage.getItem('token') ? 'Exists' : 'Missing'}</p>
+                <pre class="bg-dark p-3 border">${JSON.stringify(this.userData || {}, null, 2)}</pre>
+            </div>
+        `;
+        
+        // Add to page
+        document.querySelector('.container.py-5').appendChild(debugPanel);
+        
+        // Add clear token handler
+        debugPanel.querySelector('button').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            this.showToast('Token cleared, refreshing page...', 'warning');
+            setTimeout(() => window.location.reload(), 1500);
+        });
+    }
+
+    // Add this method to your ProfilePage class
+    checkAuthStatus() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            // No token, show guest view
+            this.hideLoadingSpinner(document.querySelector('.spinner-overlay'));
+            this.showGuestModeNotice();
+            return false;
+        }
+        
+        try {
+            // Basic validation - not secure but helps with UI flow
+            const tokenParts = token.split('.');
+            if (tokenParts.length !== 3) {
+                throw new Error('Invalid token format');
+            }
+            
+            // Decode payload (middle part)
+            const payload = JSON.parse(atob(tokenParts[1]));
+            const now = Math.floor(Date.now() / 1000);
+            
+            if (payload.exp && payload.exp < now) {
+                throw new Error('Token expired');
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Token validation failed:', error);
+            localStorage.removeItem('token');
+            window.location.href = '../landing.html';
+            return false;
+        }
     }
 }
 

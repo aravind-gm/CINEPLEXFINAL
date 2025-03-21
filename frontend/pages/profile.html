@@ -259,8 +259,17 @@
     <script>
         // Initialize the profile page when the DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // The ProfilePage class will handle everything
+            // Initialize with better error handling
             window.profilePage = new ProfilePage();
+            
+            // Add timeout to prevent infinite loading
+            setTimeout(() => {
+                const spinner = document.querySelector('.spinner-overlay');
+                if (spinner && spinner.style.display !== 'none') {
+                    profilePage.hideLoadingSpinner(spinner);
+                    profilePage.showToast('Loading took too long. Try refreshing the page.', 'warning');
+                }
+            }, 15000); // 15 seconds timeout
         });
     </script>
 </body>
