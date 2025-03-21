@@ -8,7 +8,6 @@ const API_BASE_URL = 'https://cineplexfinal.onrender.com';
 
 class ApiService {
     constructor() {
-        // Set the base URL directly
         this.baseUrl = API_BASE_URL;
         this.imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
     }
@@ -18,9 +17,7 @@ class ApiService {
         return token ? { 'Authorization': `Bearer ${token}` } : {};
     }
 
-    // In your apiCall method, update the URL construction
     async apiCall(endpoint, options = {}) {
-        // Make sure endpoint starts with a slash
         const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
         const url = this.baseUrl + formattedEndpoint;
         
@@ -31,44 +28,20 @@ class ApiService {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            mode: 'cors',
-            credentials: 'include'  // Include credentials for CORS requests
+            credentials: 'include'
         };
         
-        // Merge options
+        // Remove mode: 'cors' as it's handled automatically
         const fetchOptions = { ...defaultOptions, ...options };
-        
-        console.log('Making API request to:', url);
         
         try {
             const response = await fetch(url, fetchOptions);
             
-            // Log response status
-            console.log('API response status:', response.status);
-            
             if (!response.ok) {
-                const errorResponse = {
-                    status: response.status,
-                    statusText: response.statusText
-                };
-                console.error('API error response:', errorResponse);
-                
-                try {
-                    const errorText = await response.text();
-                    console.error('Error response text:', errorText);
-                    try {
-                        const errorData = JSON.parse(errorText);
-                        console.error('Error response data:', errorData);
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    } catch (e) {
-                        throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);
-                    }
-                } catch (e) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.detail || `HTTP error! status: ${response.status}`);
             }
             
-            // Check if response is empty
             const text = await response.text();
             return text ? JSON.parse(text) : {};
         } catch (error) {
@@ -192,8 +165,10 @@ class ApiService {
             
             return response;
         } catch (error) {
-            console.error('Registration error:', error);
-            throw error;
+            // Improve error handling
+            const errorMessage = error.message || 'Registration failed';
+            console.error('Registration error:', errorMessage);
+            throw new Error(errorMessage);
         }
     }
 
