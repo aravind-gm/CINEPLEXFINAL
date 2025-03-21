@@ -198,7 +198,8 @@ class ProfilePage {
         
         // Update demographic information
         if (this.profileFullName) {
-            this.profileFullName.textContent = this.userData.full_name || 'Not provided';
+            const fullName = this.userData.full_name || this.userData.fullName || this.userData.name || 'Not provided';
+            this.profileFullName.textContent = fullName;
         }
         
         if (this.profileAge) {

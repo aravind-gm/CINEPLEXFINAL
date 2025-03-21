@@ -18,11 +18,10 @@ app = FastAPI(title="Movie Recommendation System")
 # CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://jazzy-sunshine-a0eb75.netlify.app", "http://localhost:5500", "http://127.0.0.1:64670", "http://localhost:*", "http://127.0.0.1:*"],  # Add your Netlify URL
+    allow_origins=["https://jazzy-sunshine-a0eb75.netlify.app"],  # Add your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
 )
 
 # Mount static files
