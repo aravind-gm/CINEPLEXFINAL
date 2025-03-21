@@ -148,31 +148,23 @@ class ProfilePage {
             
             // Get current user data
             this.userData = await apiService.getCurrentUser();
-            console.log('User profile loaded:', this.userData);
             
-            // Add this logging to see if specific demographic fields exist
-            console.log('Demographics check:', {
-                fullName: this.userData.full_name,
-                age: this.userData.age,
-                gender: this.userData.gender,
-                location: this.userData.location,
-                maritalStatus: this.userData.marital_status,
-                favoriteCountries: this.userData.favorite_countries
-            });
-            
+            // If we have separate demographics endpoint, get that data too
             if (this.userData) {
-                // Update UI with user data
-                this.updateProfileDisplay();
+                try {
+                    const demographics = await apiService.getUserDemographics();
+                    // Merge demographic data with user data
+                    this.userData = { ...this.userData, ...demographics };
+                } catch (error) {
+                    console.error('Error loading demographics:', error);
+                }
                 
-                // Load other user-specific data
-                await Promise.all([
-                    this.loadWatchHistory(),
-                    this.loadWatchlist()
-                ]);
+                console.log('Complete user profile loaded:', this.userData);
+                this.updateProfileDisplay();
             }
             
             this.hideLoadingSpinner(spinner);
-            this.displayDebugInfo();
+            this.displayDebugInfo(); // Show debug data
         } catch (error) {
             console.error('Error loading user profile:', error);
             this.showToast('Error loading profile: ' + error.message, 'danger');
@@ -204,41 +196,35 @@ class ProfilePage {
             this.profileEmail.textContent = this.userData.email || 'user@example.com';
         }
         
-        // Use inline conditional testing to handle any data structure
-        // This will handle null/undefined/empty values gracefully
+        // Update demographic information
         if (this.profileFullName) {
-            const fullName = (this.userData.full_name || this.userData.fullName || this.userData.name);
-            this.profileFullName.textContent = fullName || 'Not provided';
+            this.profileFullName.textContent = this.userData.full_name || 'Not provided';
         }
         
         if (this.profileAge) {
-            const age = (this.userData.age || this.userData.user_age);
-            this.profileAge.textContent = age || 'Not provided';
+            this.profileAge.textContent = this.userData.age || 'Not provided';
         }
         
         if (this.profileGender) {
-            const gender = (this.userData.gender || this.userData.user_gender || 'not provided');
+            const gender = this.userData.gender || 'not provided';
             this.profileGender.textContent = gender.charAt(0).toUpperCase() + gender.slice(1);
         }
         
         if (this.profileLocation) {
-            const location = (this.userData.location || this.userData.user_location);
-            this.profileLocation.textContent = location || 'Not provided';
+            this.profileLocation.textContent = this.userData.location || 'Not provided';
         }
         
         if (this.profileMaritalStatus) {
-            const status = (this.userData.marital_status || this.userData.maritalStatus || 'not provided');
+            const status = this.userData.marital_status || 'not provided';
             this.profileMaritalStatus.textContent = status.charAt(0).toUpperCase() + status.slice(1);
         }
         
         if (this.profileFavoriteCountries) {
-            const countries = (this.userData.favorite_countries || this.userData.favoriteCountries);
-            this.profileFavoriteCountries.textContent = countries || 'Not provided';
+            this.profileFavoriteCountries.textContent = this.userData.favorite_countries || 'Not provided';
         }
         
         // Set up edit form fields
         try {
-            // First check if elements exist before trying to set values
             if (document.getElementById('edit-fullname')) {
                 document.getElementById('edit-fullname').value = this.userData.full_name || '';
             }

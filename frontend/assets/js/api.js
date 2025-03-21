@@ -413,6 +413,17 @@ class ApiService {
             throw error;
         }
     }
+
+    async getUserDemographics() {
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+
+        return this.apiCall('/users/demographics', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+    }
 }
 
 // Create and export an instance of the ApiService
