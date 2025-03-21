@@ -205,94 +205,39 @@ class AuthHandler {
                 email: document.getElementById('register-email')?.value.trim(),
                 gender: document.getElementById('register-gender')?.value,
                 password: document.getElementById('register-password')?.value,
-                confirmPassword: document.getElementById('register-confirm-password')?.value,
                 location: document.getElementById('register-location')?.value.trim(),
                 marital_status: document.getElementById('register-marital-status')?.value,
                 favorite_countries: document.getElementById('register-countries')?.value.trim(),
                 username: document.getElementById('register-username')?.value.trim()
             };
 
-            // Validation
-            if (!formData.full_name) {
-                this.showToast('Full name is required', 'danger');
-                return;
-            }
-
-            if (!formData.age || formData.age < 13) {
-                this.showToast('Valid age is required (13+)', 'danger');
-                return;
-            }
-
-            if (!formData.email) {
-                this.showToast('Email is required', 'danger');
-                return;
-            }
-
-            if (!formData.gender) {
-                this.showToast('Please select a gender', 'danger');
-                return;
-            }
-
-            if (!formData.password) {
-                this.showToast('Password is required', 'danger');
-                return;
-            }
-
-            if (formData.password.length < 6) {
-                this.showToast('Password must be at least 6 characters', 'danger');
-                return;
-            }
-
-            if (formData.password !== formData.confirmPassword) {
-                this.showToast('Passwords do not match', 'danger');
-                return;
-            }
-
-            if (!formData.location) {
-                this.showToast('Location is required', 'danger');
-                return;
-            }
-
-            if (!formData.marital_status) {
-                this.showToast('Please select marital status', 'danger');
-                return;
-            }
-
-            if (!formData.favorite_countries) {
-                this.showToast('Please enter favorite countries', 'danger');
-                return;
-            }
-
-            if (!formData.username) {
-                this.showToast('Username is required', 'danger');
-                return;
-            }
-
             // Show loading state
             const submitBtn = this.registerForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
 
-            // Remove confirm password before sending
-            delete formData.confirmPassword;
-
-            const response = await apiService.register(formData);
-            
-            this.registerForm.reset();
-            this.showToast('Registration successful! Please login.', 'success');
-            
-            this.registerModalInstance?.hide();
-            setTimeout(() => {
-                this.loginModalInstance?.show();
-            }, 1000);
-            
+            try {
+                const response = await apiService.register(formData);
+                this.showToast('Registration successful! Please login.', 'success');
+                this.registerModalInstance?.hide();
+                
+                // Reset form
+                this.registerForm.reset();
+                
+                // Show login modal after short delay
+                setTimeout(() => {
+                    this.loginModalInstance?.show();
+                }, 1000);
+            } catch (error) {
+                this.showToast(error.message || 'Registration failed. Please try again.', 'danger');
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Register';
+            }
         } catch (error) {
             console.error('Registration error:', error);
-            this.showToast(error.response?.detail || error.message || 'Registration failed', 'danger');
-        } finally {
-            const submitBtn = this.registerForm.querySelector('button[type="submit"]');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Register';
+            this.showToast('Registration failed. Please try again.', 'danger');
         }
     }
 

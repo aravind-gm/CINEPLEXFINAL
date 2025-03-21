@@ -8,7 +8,7 @@ const API_BASE_URL = 'https://cineplexfinal.onrender.com';
 
 class ApiService {
     constructor() {
-        this.baseUrl = API_BASE_URL;
+        this.baseUrl = 'https://cineplexfinal.onrender.com';
         this.imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
     }
 
@@ -21,19 +21,25 @@ class ApiService {
         const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
         const url = this.baseUrl + formattedEndpoint;
         
-        // Default options
+        // Default options with correct credentials handling
         const defaultOptions = {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                'Accept': 'application/json'
             },
             credentials: 'include'
         };
         
-        // Remove mode: 'cors' as it's handled automatically
-        const fetchOptions = { ...defaultOptions, ...options };
-        
+        const fetchOptions = { 
+            ...defaultOptions,
+            ...options,
+            headers: {
+                ...defaultOptions.headers,
+                ...(options.headers || {})
+            }
+        };
+
         try {
             const response = await fetch(url, fetchOptions);
             
@@ -42,8 +48,11 @@ class ApiService {
                 throw new Error(errorData?.detail || `HTTP error! status: ${response.status}`);
             }
             
-            const text = await response.text();
-            return text ? JSON.parse(text) : {};
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+            return await response.text();
         } catch (error) {
             console.error('API Error:', error);
             throw error;
@@ -165,7 +174,6 @@ class ApiService {
             
             return response;
         } catch (error) {
-            // Improve error handling
             const errorMessage = error.message || 'Registration failed';
             console.error('Registration error:', errorMessage);
             throw new Error(errorMessage);

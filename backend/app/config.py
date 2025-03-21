@@ -24,7 +24,11 @@ class Settings(BaseSettings):
     tmdb_base_url: str = os.getenv("TMDB_BASE_URL", "https://api.themoviedb.org/3")
 
     # CORS settings
-    cors_origins: List[str] = []
+    cors_origins: List[str] = [
+        "https://jazzy-sunshine-a0eb75.netlify.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:5500"
+    ]
     frontend_url: str = "https://jazzy-sunshine-a0eb75.netlify.app"
 
     class Config:

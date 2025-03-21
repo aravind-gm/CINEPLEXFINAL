@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from app.models.database import create_tables
 from app.routers import auth, movies, recommendations, users
-from app.config import settings
+from app.config import settings, FRONTEND_URL
 import logging
 from pydantic import ValidationError
 import os
@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Movie Recommendation System")
 
-# CORS middleware configuration
+# Updated CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://jazzy-sunshine-a0eb75.netlify.app"],  # Replace with your frontend domain
+    allow_origins=[FRONTEND_URL],  # Use the frontend URL from config
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
