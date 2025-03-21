@@ -425,3 +425,68 @@ async def get_movie_rating(
     except Exception as e:
         logger.error(f"Error getting movie rating: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/demographics")
+async def update_demographics(
+    demographics: schemas.UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update user demographic information"""
+    try:
+        # Log the update request
+        logger.info(f"Updating demographics for user {current_user.id}")
+        logger.info(f"Demographics data: {demographics}")
+        
+        # Track if any changes were made
+        changes_made = False
+        
+        # Update each field if provided
+        if demographics.full_name is not None:
+            current_user.full_name = demographics.full_name
+            changes_made = True
+            
+        if demographics.age is not None:
+            current_user.age = demographics.age
+            changes_made = True
+            
+        if demographics.gender is not None:
+            current_user.gender = demographics.gender
+            changes_made = True
+            
+        if demographics.location is not None:
+            current_user.location = demographics.location
+            changes_made = True
+            
+        if demographics.marital_status is not None:
+            current_user.marital_status = demographics.marital_status
+            changes_made = True
+            
+        if demographics.favorite_countries is not None:
+            current_user.favorite_countries = demographics.favorite_countries
+            changes_made = True
+        
+        # Save changes to the database if any were made
+        if changes_made:
+            current_user.updated_at = datetime.utcnow()
+            db.commit()
+            db.refresh(current_user)
+        
+        # Return the complete user object with updated fields
+        return {
+            "id": current_user.id,
+            "username": current_user.username,
+            "email": current_user.email,
+            "avatar_url": current_user.avatar_url,
+            "full_name": current_user.full_name,
+            "age": current_user.age,
+            "gender": current_user.gender,
+            "location": current_user.location,
+            "marital_status": current_user.marital_status,
+            "favorite_countries": current_user.favorite_countries
+        }
+        
+    except Exception as e:
+        logger.error(f"Error updating demographics: {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

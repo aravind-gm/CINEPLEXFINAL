@@ -38,11 +38,17 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
                 detail="Username already taken"
             )
         
-        # Create new user
+        # Create new user with all demographic data
         logger.info(f"Creating new user with username: {user_data.username}, email: {user_data.email}")
         new_user = User(
             email=user_data.email,
-            username=user_data.username
+            username=user_data.username,
+            full_name=user_data.full_name,
+            age=user_data.age,
+            gender=user_data.gender,
+            location=user_data.location,
+            marital_status=user_data.marital_status,
+            favorite_countries=user_data.favorite_countries
         )
         new_user.set_password(user_data.password)
         
@@ -104,4 +110,16 @@ async def login(
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    # Return the complete user profile including demographics
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "avatar_url": current_user.avatar_url,
+        "full_name": current_user.full_name,
+        "age": current_user.age,
+        "gender": current_user.gender,
+        "location": current_user.location,
+        "marital_status": current_user.marital_status,
+        "favorite_countries": current_user.favorite_countries
+    }

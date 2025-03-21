@@ -36,6 +36,7 @@ class User(Base):
     location = Column(String)
     marital_status = Column(String)
     favorite_countries = Column(String)
+    # ... other fields
     is_active = Column(Boolean, default=True)
     avatar_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

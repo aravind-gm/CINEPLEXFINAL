@@ -128,50 +128,40 @@ class UserBase(BaseModel):
         return v
 
 class UserCreate(BaseModel):
+    username: str
     full_name: str
-    age: int
     email: EmailStr
-    gender: str
     password: str
-    location: str
-    marital_status: str
-    favorite_countries: str  # Comma-separated list of countries
-    username: str  # Keep username for system purposes
-
-    @validator('age')
-    def validate_age(cls, v):
-        if v < 13:
-            raise ValueError('Must be at least 13 years old')
-        if v > 120:
-            raise ValueError('Invalid age')
-        return v
-
-    @validator('gender')
-    def validate_gender(cls, v):
-        valid_genders = ['male', 'female', 'other', 'prefer not to say']
-        if v.lower() not in valid_genders:
-            raise ValueError('Invalid gender selection')
-        return v.lower()
-
-    @validator('marital_status')
-    def validate_marital_status(cls, v):
-        valid_statuses = ['single', 'married', 'divorced', 'widowed', 'prefer not to say']
-        if v.lower() not in valid_statuses:
-            raise ValueError('Invalid marital status')
-        return v.lower()
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    location: Optional[str] = None
+    marital_status: Optional[str] = None
+    favorite_countries: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: int
     username: str
     email: EmailStr
     avatar_url: Optional[str] = None
+    full_name: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    location: Optional[str] = None
+    marital_status: Optional[str] = None
+    favorite_countries: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
+    full_name: Optional[str] = None
     email: Optional[EmailStr] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    location: Optional[str] = None
+    marital_status: Optional[str] = None
+    favorite_countries: Optional[str] = None
     password: Optional[str] = None
     avatar_url: Optional[str] = None
 
