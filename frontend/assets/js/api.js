@@ -164,7 +164,7 @@ class ApiService {
 
     async register(userData) {
         try {
-            const response = await fetch(`${this.baseUrl}/auth/register`, {
+            const response = await this.apiCall('/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -172,39 +172,23 @@ class ApiService {
                 body: JSON.stringify(userData)
             });
             
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Registration failed');
-            }
-            
-            return await response.json();
+            return response;
         } catch (error) {
-            console.error('Register error:', error);
-            throw error;
+            const errorMessage = error.message || 'Registration failed';
+            console.error('Registration error:', errorMessage);
+            throw new Error(errorMessage);
         }
     }
 
     async getCurrentUser() {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) throw new Error('No authentication token found');
-            
-            const response = await fetch(`${this.baseUrl}/users/me`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Error ${response.status}: Failed to fetch user data`);
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+
+        return this.apiCall('/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
-            
-            return await response.json();
-        } catch (error) {
-            console.error('Get current user error:', error);
-            throw error;
-        }
+        });
     }
 
     async searchMovies(query, page = 1) {

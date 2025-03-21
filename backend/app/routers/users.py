@@ -425,21 +425,3 @@ async def get_movie_rating(
     except Exception as e:
         logger.error(f"Error getting movie rating: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Make sure your User schema and database model include all demographic fields
-
-@router.get("/me")
-async def get_current_user_info(current_user: User = Depends(get_current_user)):
-    return {
-        "id": current_user.id,
-        "username": current_user.username,
-        "email": current_user.email,
-        "avatar_url": current_user.avatar_url,
-        "full_name": current_user.full_name,
-        "age": current_user.age,
-        "gender": current_user.gender,
-        "location": current_user.location,
-        "marital_status": current_user.marital_status,
-        "favorite_countries": current_user.favorite_countries,
-        # Add other fields as needed
-    }
