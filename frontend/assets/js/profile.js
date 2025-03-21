@@ -146,28 +146,45 @@ class ProfilePage {
         try {
             const spinner = this.showLoadingSpinner();
             
+            // Better token validation
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+            
+            // Log token to debug (remove in production)
+            console.log('Using token:', token.substring(0, 10) + '...');
+            
             // Get current user data
             this.userData = await apiService.getCurrentUser();
             
-            // If we have separate demographics endpoint, get that data too
-            if (this.userData) {
-                try {
-                    const demographics = await apiService.getUserDemographics();
-                    // Merge demographic data with user data
-                    this.userData = { ...this.userData, ...demographics };
-                } catch (error) {
-                    console.error('Error loading demographics:', error);
-                }
-                
-                console.log('Complete user profile loaded:', this.userData);
-                this.updateProfileDisplay();
+            if (!this.userData) {
+                throw new Error('Failed to load user data');
             }
+            
+            console.log('Complete user profile loaded:', this.userData);
+            this.updateProfileDisplay();
             
             this.hideLoadingSpinner(spinner);
             this.displayDebugInfo(); // Show debug data
         } catch (error) {
             console.error('Error loading user profile:', error);
+            this.hideLoadingSpinner(document.querySelector('.spinner-overlay'));
+            
+            // Update UI to show error instead of infinite loading
+            document.querySelectorAll('.demo-value').forEach(el => {
+                el.textContent = 'Login required';
+            });
+            
             this.showToast('Error loading profile: ' + error.message, 'danger');
+            
+            // If token is invalid, redirect to login page after short delay
+            if (error.message.includes('401')) {
+                localStorage.removeItem('token');
+                setTimeout(() => {
+                    window.location.href = '../landing.html';
+                }, 2000);
+            }
         }
     }
     
@@ -196,10 +213,9 @@ class ProfilePage {
             this.profileEmail.textContent = this.userData.email || 'user@example.com';
         }
         
-        // Update demographic information
+        // Update demographic information - handle multiple field name formats
         if (this.profileFullName) {
-            const fullName = this.userData.full_name || this.userData.fullName || this.userData.name || 'Not provided';
-            this.profileFullName.textContent = fullName;
+            this.profileFullName.textContent = this.userData.full_name || 'Not provided';
         }
         
         if (this.profileAge) {
@@ -416,6 +432,14 @@ class ProfilePage {
     }
     
     hideLoadingSpinner(spinner) {
+        // Remove all spinners to prevent infinite loading state
+        document.querySelectorAll('.spinner-overlay').forEach(el => {
+            if (el && el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        });
+        
+        // Also try the specific spinner
         if (spinner && spinner.parentNode) {
             spinner.parentNode.removeChild(spinner);
         }

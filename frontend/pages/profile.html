@@ -102,7 +102,11 @@
                                         <span class="demo-icon"><i class="fas fa-user"></i></span>
                                         <div>
                                             <div class="demo-label">Full Name</div>
-                                            <div class="demo-value" id="profile-fullname">Loading...</div>
+                                            <div class="demo-value" id="profile-fullname">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -110,7 +114,11 @@
                                         <span class="demo-icon"><i class="fas fa-birthday-cake"></i></span>
                                         <div>
                                             <div class="demo-label">Age</div>
-                                            <div class="demo-value" id="profile-age">Loading...</div>
+                                            <div class="demo-value" id="profile-age">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -118,7 +126,11 @@
                                         <span class="demo-icon"><i class="fas fa-venus-mars"></i></span>
                                         <div>
                                             <div class="demo-label">Gender</div>
-                                            <div class="demo-value" id="profile-gender">Loading...</div>
+                                            <div class="demo-value" id="profile-gender">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -128,7 +140,11 @@
                                         <span class="demo-icon"><i class="fas fa-map-marker-alt"></i></span>
                                         <div>
                                             <div class="demo-label">Location</div>
-                                            <div class="demo-value" id="profile-location">Loading...</div>
+                                            <div class="demo-value" id="profile-location">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -136,7 +152,11 @@
                                         <span class="demo-icon"><i class="fas fa-heart"></i></span>
                                         <div>
                                             <div class="demo-label">Marital Status</div>
-                                            <div class="demo-value" id="profile-marital-status">Loading...</div>
+                                            <div class="demo-value" id="profile-marital-status">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -144,7 +164,11 @@
                                         <span class="demo-icon"><i class="fas fa-globe-americas"></i></span>
                                         <div>
                                             <div class="demo-label">Favorite Countries</div>
-                                            <div class="demo-value" id="profile-favorite-countries">Loading...</div>
+                                            <div class="demo-value" id="profile-favorite-countries">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -158,6 +182,15 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Add this code right after your main content div for an error message container -->
+    <div id="profile-error" class="alert alert-danger d-none text-center m-4" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span id="error-message">There was a problem loading your profile data.</span>
+        <div class="mt-2">
+            <a href="../landing.html" class="btn btn-sm btn-light">Return to Login</a>
         </div>
     </div>
 

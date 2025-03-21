@@ -18,47 +18,58 @@ class ApiService {
         return token ? { 'Authorization': `Bearer ${token}` } : {};
     }
 
-    // Generic API call method with error handling
+    // In your apiCall method, add better error handling for CORS issues
     async apiCall(endpoint, options = {}) {
-        const url = `${this.baseUrl}${endpoint}`;
+        const url = this.API_BASE_URL + endpoint;
+        
+        // Default options
+        const defaultOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            mode: 'cors',
+            credentials: 'include'  // Include credentials for CORS requests
+        };
+        
+        // Merge options
+        const fetchOptions = { ...defaultOptions, ...options };
+        
+        // Log the request for debugging
+        console.log('API request:', fetchOptions.method, endpoint, fetchOptions);
         
         try {
-            console.log(`API request: ${options.method || 'GET'} ${endpoint}`, options);
+            const response = await fetch(url, fetchOptions);
             
-            const response = await fetch(url, options);
-            console.log(`API response status: ${response.status} ${response.statusText}`);
+            // Log response status
+            console.log('API response status:', response.status);
             
             if (!response.ok) {
-                console.error('API error response:', {
+                const errorResponse = {
                     status: response.status,
                     statusText: response.statusText
-                });
+                };
+                console.error('API error response:', errorResponse);
                 
-                // Try to parse the error response
-                let errorData;
                 try {
                     const errorText = await response.text();
-                    console.log('Error response text:', errorText);
-                    
+                    console.error('Error response text:', errorText);
                     try {
-                        errorData = JSON.parse(errorText);
+                        const errorData = JSON.parse(errorText);
                         console.error('Error response data:', errorData);
-                    } catch (jsonError) {
-                        console.error('Failed to parse error response as JSON');
-                        errorData = { detail: errorText };
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    } catch (e) {
+                        throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);
                     }
-                } catch (readError) {
-                    console.error('Failed to read error response:', readError);
+                } catch (e) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
-                const error = new Error(`HTTP error! status: ${response.status}`);
-                error.response = errorData;
-                throw error;
             }
             
-            const data = await response.json();
-            console.log('API response data:', data);
-            return data;
+            // Check if response is empty
+            const text = await response.text();
+            return text ? JSON.parse(text) : {};
         } catch (error) {
             console.error('API Error:', error);
             throw error;
