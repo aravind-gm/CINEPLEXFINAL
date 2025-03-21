@@ -37,6 +37,9 @@ class ProfilePage {
         // Base path for avatars
         this.avatarsPath = '../assets/images/avatars';
 
+        // Check if in guest mode
+        this.isGuestMode = localStorage.getItem('isGuestMode') === 'true';
+
         // Initialize
         this.init();
     }
@@ -146,6 +149,29 @@ class ProfilePage {
         try {
             const spinner = this.showLoadingSpinner();
             
+            // Check if in guest mode
+            if (this.isGuestMode) {
+                // Use the guest user data from localStorage
+                this.userData = JSON.parse(localStorage.getItem('user'));
+                
+                // Add guest-specific properties
+                this.userData.full_name = 'Guest User';
+                this.userData.age = '-';
+                this.userData.gender = 'Not available in guest mode';
+                this.userData.location = 'Not available in guest mode';
+                this.userData.marital_status = 'Not available in guest mode';
+                this.userData.favorite_countries = 'Not available in guest mode';
+                this.userData.watch_history = [];
+                this.userData.watchlist = [];
+                
+                this.updateProfileDisplay();
+                this.hideLoadingSpinner(spinner);
+                
+                // Show guest mode notice
+                this.showGuestModeNotice();
+                return;
+            }
+            
             // Better token validation
             const token = localStorage.getItem('token');
             if (!token) {
@@ -188,6 +214,24 @@ class ProfilePage {
         }
     }
     
+    // Add method to show guest mode notice
+    showGuestModeNotice() {
+        const container = document.querySelector('.container.py-5');
+        if (!container) return;
+        
+        const notice = document.createElement('div');
+        notice.className = 'alert alert-info mb-4';
+        notice.innerHTML = `
+            <h4 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Guest Mode Active</h4>
+            <p>You are browsing as a guest. To save your preferences, watch history, and access all features, please 
+            <a href="../landing.html" class="alert-link">create an account</a>.</p>
+            <hr>
+            <p class="mb-0">Some features are limited or unavailable in guest mode.</p>
+        `;
+        
+        container.insertBefore(notice, container.firstChild);
+    }
+
     updateProfileDisplay() {
         console.log('Updating profile display with:', this.userData);
 

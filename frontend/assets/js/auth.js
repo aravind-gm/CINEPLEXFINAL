@@ -35,6 +35,9 @@ class AuthHandler {
         this.userInfo = document.getElementById('user-info');
         this.usernameEl = document.getElementById('username');
         
+        // Add guest mode property
+        this.isGuestMode = localStorage.getItem('isGuestMode') === 'true';
+
         this.init();
     }
 
@@ -73,12 +76,22 @@ class AuthHandler {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                this.currentUser = await apiService.getCurrentUser();
-                this.isLoggedIn = true;
-                this.updateUI();
+                // Check if in guest mode
+                if (this.isGuestMode) {
+                    // Get guest user from localStorage
+                    this.currentUser = JSON.parse(localStorage.getItem('user'));
+                    this.isLoggedIn = true;
+                    this.updateUI();
+                } else {
+                    // Normal login flow
+                    this.currentUser = await apiService.getCurrentUser();
+                    this.isLoggedIn = true;
+                    this.updateUI();
+                }
             } catch (error) {
                 console.error('Error getting current user:', error);
                 localStorage.removeItem('token');
+                localStorage.removeItem('isGuestMode');
                 this.isLoggedIn = false;
                 this.updateUI();
             }
@@ -259,9 +272,11 @@ class AuthHandler {
         callback();
     }
     
+    // Update logout to also clear guest mode
     logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('isGuestMode');
         // Use relative path based on current location
         const path = window.location.pathname.includes('/pages/') ? '../landing.html' : 'landing.html';
         window.location.href = path;
@@ -300,6 +315,19 @@ class AuthHandler {
                 element.classList.remove('d-none');
             }
         });
+
+        // If in guest mode, show guest indicator
+        if (this.isLoggedIn && this.isGuestMode) {
+            const usernameEl = document.getElementById('username');
+            if (usernameEl) {
+                usernameEl.innerHTML = 'Guest <span class="badge bg-secondary ms-1">Guest Mode</span>';
+            }
+            
+            // Hide any features that shouldn't be available to guests
+            document.querySelectorAll('.no-guest').forEach(element => {
+                element.classList.add('d-none');
+            });
+        }
     }
     
     showToast(message, type = 'info') {

@@ -23,6 +23,7 @@
                     <div class="d-grid gap-3 d-sm-flex">
                         <button class="btn btn-primary btn-lg px-4" id="register-btn-main">Get Started</button>
                         <button class="btn btn-outline-light btn-lg px-4" id="login-btn-main">Sign In</button>
+                        <button class="btn btn-outline-secondary btn-lg px-4" id="guest-login-btn">Browse as Guest</button>
                     </div>
                 </div>
             </div>
@@ -206,6 +207,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitButton.disabled = false;
                 submitButton.textContent = 'Login';
             }
+        });
+    }
+    
+    // Add guest login functionality
+    const guestLoginBtn = document.getElementById('guest-login-btn');
+    
+    if (guestLoginBtn) {
+        guestLoginBtn.addEventListener('click', function() {
+            // Create a guest user object
+            const guestUser = {
+                id: 'guest-' + Date.now(),
+                username: 'Guest User',
+                email: 'guest@example.com',
+                avatar_url: '../assets/images/avatars/default.png',
+                isGuest: true
+            };
+            
+            // Store the guest user info without a real token
+            localStorage.setItem('user', JSON.stringify(guestUser));
+            localStorage.setItem('token', 'guest-token');
+            localStorage.setItem('isGuestMode', 'true');
+            
+            // Show a brief message before redirecting
+            const message = document.createElement('div');
+            message.className = 'alert alert-info position-fixed top-50 start-50 translate-middle p-3';
+            message.style.zIndex = '9999';
+            message.innerHTML = `
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                Entering guest mode...
+            `;
+            document.body.appendChild(message);
+            
+            // Redirect to index page after a short delay
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
         });
     }
 });

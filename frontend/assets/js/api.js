@@ -18,6 +18,24 @@ class ApiService {
     }
 
     async apiCall(endpoint, options = {}) {
+        // Check if in guest mode
+        const isGuestMode = localStorage.getItem('isGuestMode') === 'true';
+        
+        // For certain endpoints that require authentication, return mock data in guest mode
+        if (isGuestMode) {
+            // List of endpoints that should return mock data in guest mode
+            if (endpoint === '/auth/me') {
+                return JSON.parse(localStorage.getItem('user'));
+            }
+            
+            // For endpoints that modify data, show a message and return a mock success
+            if (options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE') {
+                console.log('In guest mode: This action would normally modify data on the server');
+                return { success: true, guest_mode: true, message: 'Action simulated in guest mode' };
+            }
+        }
+        
+        // Continue with normal API call for non-guest mode or for endpoints that should work in guest mode
         const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
         const url = this.baseUrl + formattedEndpoint;
         
@@ -182,8 +200,16 @@ class ApiService {
 
     async getCurrentUser() {
         const token = localStorage.getItem('token');
+        const isGuestMode = localStorage.getItem('isGuestMode') === 'true';
+        
         if (!token) return null;
-
+        
+        if (isGuestMode) {
+            // Return the stored guest user
+            return JSON.parse(localStorage.getItem('user'));
+        }
+        
+        // Normal flow for authenticated users
         return this.apiCall('/auth/me', {
             headers: {
                 'Authorization': `Bearer ${token}`
