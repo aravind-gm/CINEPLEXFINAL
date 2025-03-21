@@ -150,6 +150,16 @@ class ProfilePage {
             this.userData = await apiService.getCurrentUser();
             console.log('User profile loaded:', this.userData);
             
+            // Add this logging to see if specific demographic fields exist
+            console.log('Demographics check:', {
+                fullName: this.userData.full_name,
+                age: this.userData.age,
+                gender: this.userData.gender,
+                location: this.userData.location,
+                maritalStatus: this.userData.marital_status,
+                favoriteCountries: this.userData.favorite_countries
+            });
+            
             if (this.userData) {
                 // Update UI with user data
                 this.updateProfileDisplay();
@@ -162,6 +172,7 @@ class ProfilePage {
             }
             
             this.hideLoadingSpinner(spinner);
+            this.displayDebugInfo();
         } catch (error) {
             console.error('Error loading user profile:', error);
             this.showToast('Error loading profile: ' + error.message, 'danger');
@@ -169,6 +180,8 @@ class ProfilePage {
     }
     
     updateProfileDisplay() {
+        console.log('Updating profile display with:', this.userData);
+
         // Update profile avatar
         if (this.userData.avatar_url) {
             const avatarElements = document.querySelectorAll('.user-avatar');
@@ -182,49 +195,71 @@ class ProfilePage {
             });
         }
         
-        // Update user info
+        // Update user info with fallbacks to placeholder text
         if (this.profileUsername) {
-            this.profileUsername.textContent = this.userData.username;
+            this.profileUsername.textContent = this.userData.username || 'Username';
         }
         
         if (this.profileEmail) {
-            this.profileEmail.textContent = this.userData.email;
+            this.profileEmail.textContent = this.userData.email || 'user@example.com';
         }
         
-        // Update demographic information
-        if (this.userData.full_name && this.profileFullName) {
-            this.profileFullName.textContent = this.userData.full_name;
+        // Use inline conditional testing to handle any data structure
+        // This will handle null/undefined/empty values gracefully
+        if (this.profileFullName) {
+            const fullName = (this.userData.full_name || this.userData.fullName || this.userData.name);
+            this.profileFullName.textContent = fullName || 'Not provided';
         }
         
-        if (this.userData.age && this.profileAge) {
-            this.profileAge.textContent = this.userData.age;
+        if (this.profileAge) {
+            const age = (this.userData.age || this.userData.user_age);
+            this.profileAge.textContent = age || 'Not provided';
         }
         
-        if (this.userData.gender && this.profileGender) {
-            this.profileGender.textContent = this.userData.gender.charAt(0).toUpperCase() + this.userData.gender.slice(1);
+        if (this.profileGender) {
+            const gender = (this.userData.gender || this.userData.user_gender || 'not provided');
+            this.profileGender.textContent = gender.charAt(0).toUpperCase() + gender.slice(1);
         }
         
-        if (this.userData.location && this.profileLocation) {
-            this.profileLocation.textContent = this.userData.location;
+        if (this.profileLocation) {
+            const location = (this.userData.location || this.userData.user_location);
+            this.profileLocation.textContent = location || 'Not provided';
         }
         
-        if (this.userData.marital_status && this.profileMaritalStatus) {
-            this.profileMaritalStatus.textContent = this.userData.marital_status.charAt(0).toUpperCase() + this.userData.marital_status.slice(1);
+        if (this.profileMaritalStatus) {
+            const status = (this.userData.marital_status || this.userData.maritalStatus || 'not provided');
+            this.profileMaritalStatus.textContent = status.charAt(0).toUpperCase() + status.slice(1);
         }
         
-        if (this.userData.favorite_countries && this.profileFavoriteCountries) {
-            this.profileFavoriteCountries.textContent = this.userData.favorite_countries;
+        if (this.profileFavoriteCountries) {
+            const countries = (this.userData.favorite_countries || this.userData.favoriteCountries);
+            this.profileFavoriteCountries.textContent = countries || 'Not provided';
         }
         
-        // Update the edit form fields too
-        document.getElementById('edit-username').value = this.userData.username || '';
-        document.getElementById('edit-email').value = this.userData.email || '';
-        document.getElementById('edit-fullname').value = this.userData.full_name || '';
-        document.getElementById('edit-age').value = this.userData.age || '';
-        document.getElementById('edit-gender').value = this.userData.gender || 'prefer not to say';
-        document.getElementById('edit-location').value = this.userData.location || '';
-        document.getElementById('edit-marital-status').value = this.userData.marital_status || 'prefer not to say';
-        document.getElementById('edit-favorite-countries').value = this.userData.favorite_countries || '';
+        // Set up edit form fields
+        try {
+            // First check if elements exist before trying to set values
+            if (document.getElementById('edit-fullname')) {
+                document.getElementById('edit-fullname').value = this.userData.full_name || '';
+            }
+            if (document.getElementById('edit-age')) {
+                document.getElementById('edit-age').value = this.userData.age || '';
+            }
+            if (document.getElementById('edit-gender')) {
+                document.getElementById('edit-gender').value = this.userData.gender || 'prefer not to say';
+            }
+            if (document.getElementById('edit-location')) {
+                document.getElementById('edit-location').value = this.userData.location || '';
+            }
+            if (document.getElementById('edit-marital-status')) {
+                document.getElementById('edit-marital-status').value = this.userData.marital_status || 'prefer not to say';
+            }
+            if (document.getElementById('edit-favorite-countries')) {
+                document.getElementById('edit-favorite-countries').value = this.userData.favorite_countries || '';
+            }
+        } catch (error) {
+            console.error('Error setting up edit form:', error);
+        }
     }
     
     async loadWatchHistory() {
@@ -567,7 +602,9 @@ class ProfilePage {
 
     async updateDemographics(demographicData) {
         try {
+            console.log('Updating demographics with:', demographicData);
             const response = await apiService.updateUserDemographics(demographicData);
+            console.log('Demographics update response:', response);
             
             // Update local user data
             this.userData = {
@@ -582,9 +619,29 @@ class ProfilePage {
             return true;
         } catch (error) {
             console.error('Error updating demographics:', error);
-            this.showToast('Failed to update demographics', 'danger');
+            this.showToast('Failed to update demographics: ' + (error.message || 'Unknown error'), 'danger');
             return false;
         }
+    }
+
+    // Add this utility method to your ProfilePage class
+    displayDebugInfo() {
+        console.log('User data:', this.userData);
+        
+        // Create a debug section in the UI
+        const debugSection = document.createElement('div');
+        debugSection.className = 'card bg-dark border-secondary mt-4';
+        debugSection.innerHTML = `
+            <div class="card-header bg-dark border-secondary">
+                <h4 class="m-0"><i class="fas fa-bug me-2"></i>Debug Information</h4>
+            </div>
+            <div class="card-body">
+                <pre class="text-light">${JSON.stringify(this.userData, null, 2)}</pre>
+            </div>
+        `;
+        
+        // Append to main content
+        document.querySelector('.container.py-5').appendChild(debugSection);
     }
 }
 

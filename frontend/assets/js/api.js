@@ -397,6 +397,7 @@ class ApiService {
         if (!token) throw new Error('Authentication required');
         
         try {
+            console.log('Sending demographic data to API:', demographicData);
             const response = await this.apiCall('/users/demographics', {
                 method: 'PUT',
                 headers: {
