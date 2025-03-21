@@ -19,6 +19,14 @@ class ProfilePage {
         this.avatarGrid = document.getElementById('avatar-grid');
         this.avatarPreview = document.getElementById('avatar-preview');
         
+        // Add demographic elements
+        this.profileFullName = document.getElementById('profile-fullname');
+        this.profileAge = document.getElementById('profile-age');
+        this.profileGender = document.getElementById('profile-gender');
+        this.profileLocation = document.getElementById('profile-location');
+        this.profileMaritalStatus = document.getElementById('profile-marital-status');
+        this.profileFavoriteCountries = document.getElementById('profile-favorite-countries');
+        
         // Remove these lines as we're not using them anymore
         // this.avatarPicker = document.getElementById('avatar-picker');
         // this.selectedAvatarInput = document.getElementById('selected-avatar');
@@ -86,6 +94,49 @@ class ProfilePage {
                         }
                     };
                     reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Add edit demographics button click handler
+        const editDemographicsBtn = document.getElementById('edit-demographics-btn');
+        if (editDemographicsBtn) {
+            editDemographicsBtn.addEventListener('click', () => {
+                // Populate the form with current values
+                document.getElementById('edit-fullname').value = this.userData.full_name || '';
+                document.getElementById('edit-age').value = this.userData.age || '';
+                document.getElementById('edit-gender').value = this.userData.gender || 'prefer not to say';
+                document.getElementById('edit-location').value = this.userData.location || '';
+                document.getElementById('edit-marital-status').value = this.userData.marital_status || 'prefer not to say';
+                document.getElementById('edit-favorite-countries').value = this.userData.favorite_countries || '';
+                
+                // Show modal
+                const demographicsModal = new bootstrap.Modal(document.getElementById('editDemographicsModal'));
+                demographicsModal.show();
+            });
+        }
+        
+        // Add save demographics button click handler
+        const saveDemographicsBtn = document.getElementById('save-demographics-btn');
+        if (saveDemographicsBtn) {
+            saveDemographicsBtn.addEventListener('click', async () => {
+                // Get form values
+                const demographicData = {
+                    full_name: document.getElementById('edit-fullname').value,
+                    age: parseInt(document.getElementById('edit-age').value) || null,
+                    gender: document.getElementById('edit-gender').value,
+                    location: document.getElementById('edit-location').value,
+                    marital_status: document.getElementById('edit-marital-status').value,
+                    favorite_countries: document.getElementById('edit-favorite-countries').value
+                };
+                
+                // Update profile
+                const success = await this.updateDemographics(demographicData);
+                
+                if (success) {
+                    // Close modal
+                    const demographicsModal = bootstrap.Modal.getInstance(document.getElementById('editDemographicsModal'));
+                    demographicsModal.hide();
                 }
             });
         }
@@ -159,6 +210,31 @@ class ProfilePage {
         if (this.favoriteGenres) {
             const genres = this.userData.preferences?.map(genre => genre.name).slice(0, 3).join(', ') || '-';
             this.favoriteGenres.textContent = genres;
+        }
+        
+        // Update demographic information if available
+        if (this.userData.full_name && this.profileFullName) {
+            this.profileFullName.textContent = this.userData.full_name;
+        }
+        
+        if (this.userData.age && this.profileAge) {
+            this.profileAge.textContent = this.userData.age;
+        }
+        
+        if (this.userData.gender && this.profileGender) {
+            this.profileGender.textContent = this.userData.gender.charAt(0).toUpperCase() + this.userData.gender.slice(1);
+        }
+        
+        if (this.userData.location && this.profileLocation) {
+            this.profileLocation.textContent = this.userData.location;
+        }
+        
+        if (this.userData.marital_status && this.profileMaritalStatus) {
+            this.profileMaritalStatus.textContent = this.userData.marital_status.charAt(0).toUpperCase() + this.userData.marital_status.slice(1);
+        }
+        
+        if (this.userData.favorite_countries && this.profileFavoriteCountries) {
+            this.profileFavoriteCountries.textContent = this.userData.favorite_countries;
         }
         
         // Populate edit profile form
@@ -490,6 +566,28 @@ class ProfilePage {
                     this.showToast('Failed to upload avatar', 'danger');
                 }
             });
+        }
+    }
+
+    async updateDemographics(demographicData) {
+        try {
+            const response = await apiService.updateUserDemographics(demographicData);
+            
+            // Update local user data
+            this.userData = {
+                ...this.userData,
+                ...demographicData
+            };
+            
+            // Update display
+            this.updateProfileDisplay();
+            
+            this.showToast('Demographics updated successfully', 'success');
+            return true;
+        } catch (error) {
+            console.error('Error updating demographics:', error);
+            this.showToast('Failed to update demographics', 'danger');
+            return false;
         }
     }
 }

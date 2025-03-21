@@ -391,6 +391,27 @@ class ApiService {
             throw error;
         }
     }
+
+    async updateUserDemographics(demographicData) {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('Authentication required');
+        
+        try {
+            const response = await this.apiCall('/users/demographics', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(demographicData)
+            });
+            
+            return response;
+        } catch (error) {
+            console.error('Update demographics error:', error);
+            throw error;
+        }
+    }
 }
 
 // Create and export an instance of the ApiService
