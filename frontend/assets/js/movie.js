@@ -54,6 +54,9 @@ class MoviePage {
                 this.loadSimilarMovies()
             ]);
             
+            // Load reviews
+            this.loadMovieReviews(this.movieId);
+            
         } catch (error) {
             console.error('Error initializing movie page:', error);
             this.showError('Failed to load movie details');
@@ -156,6 +159,7 @@ class MoviePage {
             console.error('Error loading movie details:', error);
             this.showError('Failed to load movie details');
         }
+        await loadMovieReviews(movieId);
     }
 
     async loadSimilarMovies(page = 1) {
@@ -667,3 +671,75 @@ function toggleSidebar() {
         document.body.style.overflow = "hidden";
     }
 }
+
+let currentReviewPage = 1;
+let totalReviewPages = 1;
+
+async function loadMovieReviews(movieId, page = 1) {
+    try {
+        const response = await fetchFromTMDB(`/movie/${movieId}/reviews?language=en-US&page=${page}`);
+        const reviewsContainer = document.getElementById('movie-reviews');
+        const loadMoreBtn = document.getElementById('load-more-reviews');
+        
+        if (page === 1) {
+            reviewsContainer.innerHTML = ''; // Clear existing reviews on first load
+        }
+
+        totalReviewPages = response.total_pages;
+        
+        if (response.results.length === 0 && page === 1) {
+            reviewsContainer.innerHTML = '<p class="text-center">No reviews available for this movie.</p>';
+            return;
+        }
+
+        response.results.forEach(review => {
+            const reviewDate = new Date(review.created_at).toLocaleDateString();
+            const reviewElement = document.createElement('div');
+            reviewElement.className = 'card mb-3';
+            reviewElement.innerHTML = `
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5 class="card-title">${review.author}</h5>
+                        <small class="text-muted">${reviewDate}</small>
+                    </div>
+                    <p class="card-text">${review.content.substring(0, 300)}${review.content.length > 300 ? '...' : ''}</p>
+                    ${review.content.length > 300 ? 
+                        `<button class="btn btn-link p-0" onclick="toggleReviewContent(this, '${review.content.replace(/'/g, "\\'")}')">
+                            Read More
+                        </button>` : ''}
+                </div>
+            `;
+            reviewsContainer.appendChild(reviewElement);
+        });
+
+        // Show/hide load more button
+        if (page < totalReviewPages) {
+            loadMoreBtn.classList.remove('d-none');
+        } else {
+            loadMoreBtn.classList.add('d-none');
+        }
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        document.getElementById('movie-reviews').innerHTML = 
+            '<p class="text-center text-danger">Error loading reviews. Please try again later.</p>';
+    }
+}
+
+function toggleReviewContent(button, fullContent) {
+    const cardText = button.previousElementSibling;
+    if (button.textContent === 'Read More') {
+        cardText.textContent = fullContent;
+        button.textContent = 'Show Less';
+    } else {
+        cardText.textContent = fullContent.substring(0, 300) + '...';
+        button.textContent = 'Read More';
+    }
+}
+
+// Add event listener for load more button
+document.getElementById('load-more-reviews').addEventListener('click', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const movieId = urlParams.get('id');
+    currentReviewPage++;
+    loadMovieReviews(movieId, currentReviewPage);
+});
