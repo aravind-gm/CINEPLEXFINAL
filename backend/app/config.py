@@ -25,11 +25,11 @@ class Settings(BaseSettings):
 
     # CORS settings
     cors_origins: List[str] = [
-        "https://jazzy-sunshine-a0eb75.netlify.app",
+        "https://cineplexv1.netlify.app",
         "http://localhost:3000",
         "http://127.0.0.1:5500"
     ]
-    frontend_url: str = "https://jazzy-sunshine-a0eb75.netlify.app"
+    frontend_url: str = "https://cineplexv1.netlify.app"
 
     class Config:
         env_file = ".env"
