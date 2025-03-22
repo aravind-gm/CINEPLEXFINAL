@@ -18,10 +18,12 @@ app = FastAPI(title="Movie Recommendation System")
 # Updated CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL],  # Use the frontend URL from config
+    allow_origins=settings.cors_origins,  # Use the origins from settings
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600
 )
 
 # Mount static files
@@ -42,4 +44,4 @@ async def startup_event():
 # Root endpoint
 @app.get("/")
 async def root():
-    return {"message": "Movie Recommendation System API"}
+    return {"message": "Movie Recommendation API is running", "status": "ok"}

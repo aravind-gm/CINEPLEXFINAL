@@ -20,17 +20,18 @@ class ApiService {
 
     async apiCall(endpoint, options = {}) {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // Increase timeout to 30s
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         try {
+            // Remove credentials: 'include' for cross-origin requests with Bearer tokens
             const response = await fetch(`${this.baseUrl}${endpoint}`, {
                 ...options,
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
+                    ...this.getAuthHeaders(),  // Add auth headers to every request
                     ...options.headers,
                 },
-                credentials: 'include',
                 mode: 'cors',
                 signal: controller.signal
             });
@@ -38,10 +39,15 @@ class ApiService {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({
-                    detail: response.statusText
-                }));
-                throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                // Better error handling
+                let errorMessage;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || `HTTP error! status: ${response.status}`;
+                } catch (e) {
+                    errorMessage = `HTTP error! status: ${response.status}`;
+                }
+                throw new Error(errorMessage);
             }
 
             return response.json();
@@ -134,21 +140,32 @@ class ApiService {
         formData.append('password', password);
 
         try {
-            const response = await this.apiCall('/auth/login', {
+            const response = await fetch(`${this.baseUrl}/auth/login`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
                 },
+                mode: 'cors',
                 body: formData
             });
 
-            // Store token if successful
-            if (response.access_token) {
-                localStorage.setItem('token', response.access_token);
-                localStorage.setItem('user', JSON.stringify(response.user));
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({
+                    detail: response.statusText
+                }));
+                throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
             }
 
-            return response;
+            const data = await response.json();
+
+            // Store token if successful
+            if (data.access_token) {
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
+
+            return data;
         } catch (error) {
             console.error('Login error:', error);
             throw error;
