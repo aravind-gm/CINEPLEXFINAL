@@ -441,6 +441,16 @@ class ApiService {
             }
         });
     }
+
+    async getMovieReviews(movieId, page = 1) {
+        try {
+            const response = await this.get(`/movies/${movieId}/reviews?page=${page}`);
+            return response;
+        } catch (error) {
+            console.error('Error fetching movie reviews:', error);
+            throw error;
+        }
+    }
 }
 
 // Create and export an instance of the ApiService

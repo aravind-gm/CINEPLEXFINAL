@@ -132,5 +132,9 @@ class TMDBService:
             logger.error(f"Error fetching movie from TMDB: {str(e)}")
             return None
 
+    def get_movie_reviews(self, movie_id: int, page: int = 1) -> Dict:
+        """Get reviews for a specific movie from TMDB"""
+        return self._make_request(f"/movie/{movie_id}/reviews", {"page": page})
+
 # Create a singleton instance
 tmdb_service = TMDBService()

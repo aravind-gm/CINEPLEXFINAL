@@ -189,7 +189,9 @@ html {
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
+    box-orient: vertical;
     margin-bottom: 15px;
     flex-grow: 1;
 }
@@ -1200,5 +1202,66 @@ body.home .top-navbar .container-fluid {
     width: 100%;
     margin: 0 auto;
     padding: 0 15px;
+}
+
+/* Add these styles to the end of your file */
+
+/* Movie Reviews Styling */
+.review-card {
+    background-color: var(--netflix-dark);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.review-header {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.review-author {
+    display: flex;
+    align-items: center;
+}
+
+.author-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: var(--netflix-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.review-content {
+    padding: 1.5rem;
+    color: var(--netflix-text);
+}
+
+.review-date {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.review-rating {
+    background-color: var(--netflix-red);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+}
+
+.review-rating i {
+    margin-right: 0.3rem;
 }
 

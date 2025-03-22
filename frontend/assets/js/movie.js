@@ -15,6 +15,7 @@ class MoviePage {
         // Initialize container references
         this.movieDetailsContainer = document.getElementById('movie-details');
         this.similarMoviesContainer = document.getElementById('similar-movies');
+        this.reviewsContainer = document.getElementById('movie-reviews');
 
         if (!this.movieDetailsContainer) {
             console.error('Movie details container not found');
@@ -53,6 +54,9 @@ class MoviePage {
                 this.loadMovieDetails(),
                 this.loadSimilarMovies()
             ]);
+            
+            // Load reviews after main content is loaded
+            this.loadMovieReviews();
             
         } catch (error) {
             console.error('Error initializing movie page:', error);
@@ -209,6 +213,46 @@ class MoviePage {
                         <i class="fas fa-exclamation-circle me-2"></i>
                         Failed to load similar movies. Please try again later.
                     </div>
+                </div>
+            `;
+        }
+    }
+
+    async loadMovieReviews(page = 1) {
+        try {
+            if (!this.reviewsContainer) return;
+            
+            // Show loading state
+            this.reviewsContainer.innerHTML = `
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+            
+            const response = await apiService.getMovieReviews(this.movieId, page);
+            
+            // Handle empty results
+            if (!response?.reviews?.length) {
+                this.reviewsContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No reviews available for this movie.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Render reviews with pagination
+            this.renderReviews(response);
+            
+        } catch (error) {
+            console.error('Error loading movie reviews:', error);
+            this.reviewsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Failed to load reviews. Please try again later.
                 </div>
             `;
         }
@@ -394,6 +438,61 @@ class MoviePage {
                     }
                 });
             });
+        }
+    }
+
+    renderReviews(response) {
+        if (!this.reviewsContainer || !response?.reviews?.length) return;
+        
+        const { reviews, page, total_pages } = response;
+        
+        // Scroll to container top if changing pages
+        if (page > 1) {
+            this.reviewsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        this.reviewsContainer.innerHTML = `
+            <h3 class="mb-4">User Reviews</h3>
+            ${reviews.map(review => {
+                const date = new Date(review.created_at).toLocaleDateString();
+                const rating = review.author_details?.rating;
+                return `
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${review.author}</strong>
+                                <span class="text-muted ms-2">${date}</span>
+                            </div>
+                            ${rating ? `
+                                <div>
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-star"></i> ${rating}/10
+                                    </span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="card-body">
+                            <p>${review.content.slice(0, 300)}${review.content.length > 300 ? '...' : ''}</p>
+                            ${review.content.length > 300 ? `
+                                <a href="${review.url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    Read Full Review
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+            ${total_pages > 1 ? this.renderPagination(page, total_pages, 'reviews-pagination') : ''}
+        `;
+        
+        // Add pagination handlers
+        if (total_pages > 1) {
+            const paginationContainer = this.reviewsContainer.querySelector('.pagination');
+            if (paginationContainer) {
+                this.setupPaginationHandlers(paginationContainer, (newPage) => {
+                    this.loadMovieReviews(newPage);
+                });
+            }
         }
     }
 

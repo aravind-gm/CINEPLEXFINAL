@@ -341,3 +341,32 @@ async def get_similar_movies(
     except Exception as e:
         logger.error(f"Error getting similar movies: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Add this endpoint to your movies router
+@router.get("/{movie_id}/reviews")
+async def get_movie_reviews(
+    movie_id: int, 
+    page: int = Query(1, ge=1),
+    limit: int = Query(5, ge=1, le=20),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """Get reviews for a specific movie from TMDB"""
+    try:
+        # Get reviews from TMDB API
+        response = tmdb_service.get_movie_reviews(movie_id, page)
+        
+        # Get results and apply limit
+        results = response.get("results", [])[:limit]
+        total_results = response.get("total_results", 0)
+        
+        return {
+            "reviews": results,
+            "page": page,
+            "total_pages": math.ceil(total_results / limit),
+            "total_results": total_results
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting movie reviews: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
