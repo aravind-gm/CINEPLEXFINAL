@@ -442,9 +442,15 @@ class ApiService {
         });
     }
 
-    async getMovieReviews(movieId, page = 1) {
+    async getMovieReviews(movieId, page = 1, limit = 5) {
         try {
-            const response = await this.get(`/movies/${movieId}/reviews?page=${page}`);
+            const token = localStorage.getItem('token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            
+            const response = await this.apiCall(`/movies/${movieId}/reviews?page=${page}&limit=${limit}`, {
+                headers: headers
+            });
+            
             return response;
         } catch (error) {
             console.error('Error fetching movie reviews:', error);

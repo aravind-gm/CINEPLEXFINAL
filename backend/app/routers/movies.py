@@ -342,7 +342,7 @@ async def get_similar_movies(
         logger.error(f"Error getting similar movies: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Add this endpoint to your movies router
+# This endpoint is already implemented in your code, just make sure it looks like this:
 @router.get("/{movie_id}/reviews")
 async def get_movie_reviews(
     movie_id: int, 

@@ -50,13 +50,13 @@ class MoviePage {
             }, 300);
             
             // Load content
-            const [movieDetails, similarMovies] = await Promise.all([
+            await Promise.all([
                 this.loadMovieDetails(),
                 this.loadSimilarMovies()
             ]);
             
             // Load reviews after main content is loaded
-            this.loadMovieReviews();
+            await this.loadMovieReviews();
             
         } catch (error) {
             console.error('Error initializing movie page:', error);
@@ -452,37 +452,44 @@ class MoviePage {
         }
         
         this.reviewsContainer.innerHTML = `
-            <h3 class="mb-4">User Reviews</h3>
-            ${reviews.map(review => {
-                const date = new Date(review.created_at).toLocaleDateString();
-                const rating = review.author_details?.rating;
-                return `
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>${review.author}</strong>
-                                <span class="text-muted ms-2">${date}</span>
-                            </div>
-                            ${rating ? `
-                                <div>
-                                    <span class="badge bg-warning text-dark">
-                                        <i class="fas fa-star"></i> ${rating}/10
-                                    </span>
+            <div class="container">
+                <h3 class="mb-4">User Reviews</h3>
+                <div class="review-container">
+                    ${reviews.map(review => {
+                        const date = new Date(review.created_at).toLocaleDateString();
+                        const rating = review.author_details?.rating;
+                        const avatarLetter = review.author.charAt(0).toUpperCase();
+                        
+                        return `
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="review-author">
+                                        <div class="author-avatar">${avatarLetter}</div>
+                                        <div>
+                                            <div><strong>${review.author}</strong></div>
+                                            <div class="review-date">${date}</div>
+                                        </div>
+                                    </div>
+                                    ${rating ? `
+                                        <div class="review-rating">
+                                            <i class="fas fa-star"></i> ${rating}/10
+                                        </div>
+                                    ` : ''}
                                 </div>
-                            ` : ''}
-                        </div>
-                        <div class="card-body">
-                            <p>${review.content.slice(0, 300)}${review.content.length > 300 ? '...' : ''}</p>
-                            ${review.content.length > 300 ? `
-                                <a href="${review.url}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                    Read Full Review
-                                </a>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('')}
-            ${total_pages > 1 ? this.renderPagination(page, total_pages, 'reviews-pagination') : ''}
+                                <div class="review-content">
+                                    <p>${review.content.slice(0, 300)}${review.content.length > 300 ? '...' : ''}</p>
+                                    ${review.content.length > 300 ? `
+                                        <a href="${review.url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            Read Full Review
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                ${total_pages > 1 ? this.renderPagination(page, total_pages, 'reviews-pagination') : ''}
+            </div>
         `;
         
         // Add pagination handlers

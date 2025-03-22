@@ -94,31 +94,11 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/movie.js"></script>
     
-    <!-- Disqus Integration -->
-    <script>
+    <!-- Remove Disqus integration if it's causing issues -->
+    <!-- <script>
         function loadDisqus() {
-            var urlParams = new URLSearchParams(window.location.search);
-            var movieId = urlParams.get('id');
-            
-            if (!movieId) {
-                console.error('Movie ID not found in URL');
-                return;
-            }
-            
-            var disqus_config = function () {
-                this.page.url = window.location.href;
-                this.page.identifier = "movie-" + movieId;
-            };
-            
-            (function() {
-                var d = document, s = d.createElement('script');
-                s.src = 'https://uflix-1.disqus.com/embed.js'; // Replace with your Disqus shortname
-                s.setAttribute('data-timestamp', +new Date());
-                (d.head || d.body).appendChild(s);
-            })();
+            // Remove or comment this section if it's causing errors
         }
-        
-        document.addEventListener("DOMContentLoaded", loadDisqus);
-    </script>
+    </script> -->
 </body>
 </html>
