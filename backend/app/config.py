@@ -25,11 +25,12 @@ class Settings(BaseSettings):
 
     # CORS settings
     cors_origins: List[str] = [
-        "https://jazzy-sunshine-a0eb75.netlify.app",  # Primary frontend
-        "https://cineplexfinal.vercel.app",  # Keep Vercel URL for reference
-        "https://cineplexv1.netlify.app",  # Keep old URL for backward compatibility
-        "http://localhost:3000",
-        "http://127.0.0.1:5500"
+        "https://jazzy-sunshine-a0eb75.netlify.app",    # Primary frontend
+        "https://cineplexfinal.vercel.app",             # Vercel deployment
+        "https://cineplexv1.netlify.app",               # Legacy URL
+        "http://localhost:3000",                        # Local development
+        "http://127.0.0.1:5500",                       # Live server
+        "null"                                         # Allow null origin for local file testing
     ]
     frontend_url: str = "https://jazzy-sunshine-a0eb75.netlify.app"
 
@@ -71,3 +72,13 @@ TMDB_ACCESS_TOKEN = settings.tmdb_access_token
 TMDB_BASE_URL = settings.tmdb_base_url
 CORS_ORIGINS = settings.cors_origins
 FRONTEND_URL = settings.frontend_url
+
+# Update the CORS middleware configuration in main.py
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"]
+)

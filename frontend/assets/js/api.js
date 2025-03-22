@@ -18,52 +18,35 @@ class ApiService {
     }
 
     async apiCall(endpoint, options = {}) {
-        const API_BASE_URL = 'https://cineplexfinal.onrender.com';  // Update to match your backend URL
-        
-        // Create an abort controller for timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-        
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // Increase timeout to 30s
+
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            // Add CORS mode and credentials
+            const response = await fetch(`${this.baseUrl}${endpoint}`, {
                 ...options,
+                mode: 'cors',
+                credentials: 'include',
+                headers: {
+                    ...options.headers,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
                 signal: controller.signal
             });
-            
-            clearTimeout(timeoutId); // Clear timeout on successful response
-            
-            // Log response details for debugging
-            console.log(`API call to ${endpoint}: status ${response.status}`);
-            
+
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                // Try to get error details from response
-                let errorMessage;
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.detail || `API error: ${response.statusText}`;
-                } catch (e) {
-                    errorMessage = `API error: ${response.statusText}`;
-                }
-                
-                // Create error object with status code
-                const error = new Error(errorMessage);
-                error.status = response.status;
-                throw error;
+                const errorData = await response.json().catch(() => ({
+                    detail: response.statusText
+                }));
+                throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
             }
-            
-            // Check if response is empty
-            const text = await response.text();
-            if (!text) {
-                return null;
-            }
-            
-            // Parse JSON response
-            return JSON.parse(text);
+
+            return response.json();
         } catch (error) {
             clearTimeout(timeoutId);
-            if (error.name === 'AbortError') {
-                throw new Error('Request timed out. Server may be unavailable.');
-            }
             console.error(`API call failed: ${endpoint}`, error);
             throw error;
         }
