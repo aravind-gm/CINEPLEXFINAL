@@ -74,6 +74,11 @@ CORS_ORIGINS = settings.cors_origins
 FRONTEND_URL = settings.frontend_url
 
 # Update the CORS middleware configuration in main.py
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+
+app = FastAPI()  # Ensure app is defined
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,

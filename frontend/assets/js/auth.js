@@ -212,159 +212,159 @@ class AuthHandler {
 
     async handleRegister() {
         try {
-            const submitBtn = this.registerForm.querySelector('button[type="submit"]');this.registerForm.querySelector('button[type="submit"]');
+            const submitBtn = this.registerForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';sm"></span> Loading...';
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
 
             const formData = {
-                username: document.getElementById('register-username').value.trim(),rim(),
+                username: document.getElementById('register-username').value.trim(),
                 email: document.getElementById('register-email').value.trim(),
                 password: document.getElementById('register-password').value,
                 full_name: document.getElementById('register-fullname')?.value.trim()
             };
 
-            try {            try {
-                const response = await apiService.register(formData);await apiService.register(formData);
+            try {
+                const response = await apiService.register(formData);
                 this.showToast('Registration successful! Please login.', 'success');
-                this.registerModalInstance?.hide();ance?.hide();
+                this.registerModalInstance?.hide();
                 setTimeout(() => this.loginModalInstance?.show(), 1000);
-            } catch (error) {            } catch (error) {
-                this.showToast(error.message || 'Registration failed. Please try again.', 'danger');his.showToast(error.message || 'Registration failed. Please try again.', 'danger');
+            } catch (error) {
+                this.showToast(error.message || 'Registration failed. Please try again.', 'danger');
                 console.error('Registration error:', error);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Register';submitBtn.innerHTML = 'Register';
+                submitBtn.innerHTML = 'Register';
             }
         } catch (error) {
-            console.error('Form handling error:', error);ole.error('Form handling error:', error);
-            this.showToast('An unexpected error occurred. Please try again.', 'danger');red. Please try again.', 'danger');
+            console.error('Form handling error:', error);
+            this.showToast('An unexpected error occurred. Please try again.', 'danger');
         }
     }
 
     createAlert(type) {
         const alert = document.createElement('div');
-        alert.className = `alert alert-${type} mb-3`; = `alert alert-${type} mb-3`;
+        alert.className = `alert alert-${type} mb-3`;
         alert.role = 'alert';
-        document.querySelector('#registerModal .modal-body').insertBefore(dal .modal-body').insertBefore(
+        document.querySelector('#registerModal .modal-body').insertBefore(
             alert,
-            document.querySelector('#register-form')ocument.querySelector('#register-form')
+            document.querySelector('#register-form')
         );
         return alert;
     }
 
-    async fadeTransition(callback) {sync fadeTransition(callback) {
-        document.body.style.opacity = '0';        document.body.style.opacity = '0';
-        document.body.style.transition = 'opacity 0.3s ease';tyle.transition = 'opacity 0.3s ease';
-        await new Promise(resolve => setTimeout(resolve, 300));lve, 300));
+    async fadeTransition(callback) {
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.3s ease';
+        await new Promise(resolve => setTimeout(resolve, 300));
         callback();
     }
     
-    // Update logout to also clear guest modeut to also clear guest mode
+    // Update logout to also clear guest mode
     logout() {
-        localStorage.removeItem('token');calStorage.removeItem('token');
-        localStorage.removeItem('user');removeItem('user');
-        localStorage.removeItem('isGuestMode');   localStorage.removeItem('isGuestMode');
-        // Use relative path based on current location        // Use relative path based on current location
-        const path = window.location.pathname.includes('/pages/') ? '../landing.html' : 'landing.html';.pathname.includes('/pages/') ? '../landing.html' : 'landing.html';
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('isGuestMode');
+        // Use relative path based on current location
+        const path = window.location.pathname.includes('/pages/') ? '../landing.html' : 'landing.html';
         window.location.href = path;
     }
     
     updateUI() {
-        if (this.authButtons && this.userInfo) {   if (this.authButtons && this.userInfo) {
-            if (this.isLoggedIn && this.currentUser) {        if (this.isLoggedIn && this.currentUser) {
-                this.authButtons.classList.add('d-none');d('d-none');
-                this.userInfo.classList.remove('d-none');  this.userInfo.classList.remove('d-none');
+        if (this.authButtons && this.userInfo) {
+            if (this.isLoggedIn && this.currentUser) {
+                this.authButtons.classList.add('d-none');
+                this.userInfo.classList.remove('d-none');
                 if (this.usernameEl) {
-                    this.usernameEl.textContent = this.currentUser.username;Content = this.currentUser.username;
+                    this.usernameEl.textContent = this.currentUser.username;
                 }
             } else {
                 this.authButtons.classList.remove('d-none');
-                this.userInfo.classList.add('d-none');ist.add('d-none');
-            }       }
-        }    }
+                this.userInfo.classList.add('d-none');
+            }
+        }
         
-        // Update other UI elements based on authentication statehentication state
-        const authRequiredElements = document.querySelectorAll('.auth-required');ectorAll('.auth-required');
-        const noAuthElements = document.querySelectorAll('.no-auth');'.no-auth');
+        // Update other UI elements based on authentication state
+        const authRequiredElements = document.querySelectorAll('.auth-required');
+        const noAuthElements = document.querySelectorAll('.no-auth');
         
-        authRequiredElements.forEach(element => {lement => {
+        authRequiredElements.forEach(element => {
             if (this.isLoggedIn) {
-                element.classList.remove('d-none');lement.classList.remove('d-none');
+                element.classList.remove('d-none');
             } else {
                 element.classList.add('d-none');
             }
         });
         
-        noAuthElements.forEach(element => {noAuthElements.forEach(element => {
+        noAuthElements.forEach(element => {
             if (this.isLoggedIn) {
                 element.classList.add('d-none');
             } else {
-                element.classList.remove('d-none');        element.classList.remove('d-none');
+                element.classList.remove('d-none');
             }
         });
 
-        // If in guest mode, show guest indicatorst mode, show guest indicator
-        if (this.isLoggedIn && this.isGuestMode) { {
-            const usernameEl = document.getElementById('username');onst usernameEl = document.getElementById('username');
-            if (usernameEl) { if (usernameEl) {
-                usernameEl.innerHTML = 'Guest <span class="badge bg-secondary ms-1">Guest Mode</span>';        usernameEl.innerHTML = 'Guest <span class="badge bg-secondary ms-1">Guest Mode</span>';
+        // If in guest mode, show guest indicator
+        if (this.isLoggedIn && this.isGuestMode) {
+            const usernameEl = document.getElementById('username');
+            if (usernameEl) {
+                usernameEl.innerHTML = 'Guest <span class="badge bg-secondary ms-1">Guest Mode</span>';
             }
             
-            // Hide any features that shouldn't be available to guestsbe available to guests
-            document.querySelectorAll('.no-guest').forEach(element => {.querySelectorAll('.no-guest').forEach(element => {
+            // Hide any features that shouldn't be available to guests
+            document.querySelectorAll('.no-guest').forEach(element => {
                 element.classList.add('d-none');
-            }););
+            });
         }
-    }    }
+    }
     
     showToast(message, type = 'info') {
         // Create toast container if it doesn't exist
-        let toastContainer = document.getElementById('toast-container');document.getElementById('toast-container');
+        let toastContainer = document.getElementById('toast-container');
         if (!toastContainer) {
-            toastContainer = document.createElement('div');oastContainer = document.createElement('div');
-            toastContainer.id = 'toast-container';toastContainer.id = 'toast-container';
-            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3'; bottom-0 end-0 p-3';
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
             document.body.appendChild(toastContainer);
         }
         
-        // Create toast element/ Create toast element
-        const toastId = 'toast-' + Date.now();   const toastId = 'toast-' + Date.now();
-        const toast = document.createElement('div');    const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type}`;items-center text-white bg-${type === 'error' ? 'danger' : type}`;
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type}`;
         toast.id = toastId;
         toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');ia-live', 'assertive');
+        toast.setAttribute('aria-live', 'assertive');
         toast.setAttribute('aria-atomic', 'true');
         
         // Create toast content
         toast.innerHTML = `
-            <div class="d-flex">   <div class="d-flex">
-                <div class="toast-body">        <div class="toast-body">
+            <div class="d-flex">
+                <div class="toast-body">
                     ${message}
                 </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>se me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         `;
         
         // Add toast to container
         toastContainer.appendChild(toast);
         
-        // Initialize and show toasttoast
-        const bsToast = new bootstrap.Toast(toast); bootstrap.Toast(toast);
+        // Initialize and show toast
+        const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
         
-        // Remove toast after it's hiddenit's hidden
-        toast.addEventListener('hidden.bs.toast', () => {Listener('hidden.bs.toast', () => {
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', () => {
             toast.remove();
         });
     }
 }
 
 // Initialize auth handler safely
-document.addEventListener('DOMContentLoaded', () => {.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     try {
         window.authHandler = new AuthHandler();
     } catch (error) {
-        console.error('Error initializing AuthHandler:', error);console.error('Error initializing AuthHandler:', error);
+        console.error('Error initializing AuthHandler:', error);
     }
 });
