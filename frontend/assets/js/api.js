@@ -8,6 +8,7 @@ const API_BASE_URL = 'https://cineplexfinal.onrender.com';
 
 class ApiService {
     constructor() {
+        // Update with your actual Render.com backend URL
         this.baseUrl = 'https://cineplexfinal.onrender.com';
         this.imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
     }
@@ -22,16 +23,15 @@ class ApiService {
         const timeoutId = setTimeout(() => controller.abort(), 30000); // Increase timeout to 30s
 
         try {
-            // Add CORS mode and credentials
             const response = await fetch(`${this.baseUrl}${endpoint}`, {
                 ...options,
-                mode: 'cors',
-                credentials: 'include',
                 headers: {
-                    ...options.headers,
+                    'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    ...options.headers,
                 },
+                credentials: 'include',
+                mode: 'cors',
                 signal: controller.signal
             });
 

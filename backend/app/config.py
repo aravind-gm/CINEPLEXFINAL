@@ -28,9 +28,10 @@ class Settings(BaseSettings):
         "https://jazzy-sunshine-a0eb75.netlify.app",    # Primary frontend
         "https://cineplexfinal.vercel.app",             # Vercel deployment
         "https://cineplexv1.netlify.app",               # Legacy URL
+        "https://cineplexfinal.onrender.com",           # Add backend URL
         "http://localhost:3000",                        # Local development
         "http://127.0.0.1:5500",                       # Live server
-        "null"                                         # Allow null origin for local file testing
+        "*"                                            # Temporarily allow all origins for testing
     ]
     frontend_url: str = "https://jazzy-sunshine-a0eb75.netlify.app"
 
@@ -81,9 +82,10 @@ app = FastAPI()  # Ensure app is defined
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=["*"],  # Temporarily allow all origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
+    expose_headers=["*"],
+    max_age=3600
 )
